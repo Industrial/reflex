@@ -1,3 +1,5 @@
+import { resolve } from 'https://deno.land/std@0.140.0/path/mod.ts';
+
 export const externalToInternalURL = (
   externalURL: string,
   vendorSourcePrefix: string,
@@ -29,5 +31,13 @@ export const fetchSourceFromPath = async (path: string) => {
     return await (await fetch(path)).text();
   } else {
     return await Deno.readTextFile(path);
+  }
+};
+
+export const resolveLocalPath = (path: string) => {
+  if (path.startsWith('.')) {
+    return resolve(`${Deno.cwd()}/${path}`);
+  } else {
+    return resolve(path);
   }
 };

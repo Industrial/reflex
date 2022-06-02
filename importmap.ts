@@ -9,24 +9,31 @@ import { fetchSourceFromPath, isPathAnURL } from './path.ts';
 import { resolve } from 'https://deno.land/std@0.140.0/path/mod.ts';
 
 const cache = createCache();
-const appSourcePrefix = '/.x';
-const vendorSourcePrefix = '/.v';
 
 export type ImportMap = {
   imports: Record<string, string>;
 };
 
+let importMap: ImportMap;
 export const getImportMap = async (path: string): Promise<ImportMap> => {
+  if (importMap) {
+    return importMap;
+  }
   const decoder = new TextDecoder();
   const file = await Deno.readFile(path);
-  const importMap = JSON.parse(decoder.decode(file)) as ImportMap;
+  importMap = JSON.parse(decoder.decode(file)) as ImportMap;
   return importMap;
 };
 
+let resolvedImports: Record<string, string>;
 export const resolveImports = async (
   importMap: ImportMap,
 ): Promise<Record<string, string>> => {
-  const resolvedImports: Record<string, string> = {};
+  if (resolvedImports) {
+    return resolvedImports;
+  }
+
+  resolvedImports = {};
 
   for (const [_key, path] of Object.entries(importMap.imports)) {
     let resolvedPath: string;
@@ -56,13 +63,13 @@ export const resolveImports = async (
   return resolvedImports;
 };
 
-export const compileImports = async (
+export const compileVendorFiles = async (
   resolvedImports: Record<string, string>,
   importMap: ImportMap,
   appSourcePrefix: string,
   vendorSourcePrefix: string,
 ): Promise<Record<string, string>> => {
-  const compiledImports = await asyncMap<string>(
+  const compiledVendorFiles = await asyncMap<string>(
     async (local, specifier) => {
       const path = local || specifier;
       const source = await fetchSourceFromPath(path);
@@ -86,7 +93,7 @@ export const compileImports = async (
     resolvedImports,
   );
 
-  return compiledImports;
+  return compiledVendorFiles;
 };
 
 export const compileApplicationFiles = async (
@@ -127,46 +134,3 @@ export const compileApplicationFiles = async (
   }
   return transpileFiles;
 };
-
-export let importMap: ImportMap;
-try {
-  importMap = await getImportMap(`${Deno.cwd()}/importMap.json`);
-} catch (_error: unknown) {
-  console.error('No importMap.json found.');
-  Deno.exit();
-}
-
-export let resolvedImports: Record<string, string>;
-try {
-  resolvedImports = await resolveImports(importMap);
-} catch (_error: unknown) {
-  console.error('There was an error resolving imports.');
-  Deno.exit();
-}
-
-export let compiledImports: Record<string, string>;
-try {
-  compiledImports = await compileImports(
-    resolvedImports,
-    importMap,
-    appSourcePrefix,
-    vendorSourcePrefix,
-  );
-} catch (_error: unknown) {
-  console.error('There was an error compiling imports.');
-  Deno.exit();
-}
-
-export let transpileFiles: Record<string, string>;
-try {
-  transpileFiles = await compileApplicationFiles(
-    `${Deno.cwd()}/app`,
-    importMap,
-    resolvedImports,
-    appSourcePrefix,
-    vendorSourcePrefix,
-  );
-} catch (_error: unknown) {
-  console.error('There was an error compiling imports.');
-  Deno.exit();
-}

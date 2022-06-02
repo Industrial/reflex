@@ -1,15 +1,39 @@
 import { Middleware } from 'https://deno.land/x/oak@v10.6.0/mod.ts';
 
-import { compiledImports, importMap } from '../importmap.ts';
+import {
+  compileVendorFiles,
+  getImportMap,
+  resolveImports,
+} from '../importmap.ts';
 import { internalToExternalURL } from '../path.ts';
 
 export type VendorSourceMiddlewareProps = {
+  appSourcePrefix: string;
   vendorSourcePrefix: string;
+  importMapPath: string;
 };
 
-export const vendorSourceMiddleware = ({
+export const vendorSourceMiddleware = async ({
+  appSourcePrefix,
   vendorSourcePrefix,
+  importMapPath,
 }: VendorSourceMiddlewareProps) => {
+  const importMap = await getImportMap(importMapPath);
+  const resolvedImports = await resolveImports(importMap);
+
+  let compiledVendorFiles: Record<string, string>;
+  try {
+    compiledVendorFiles = await compileVendorFiles(
+      resolvedImports,
+      importMap,
+      appSourcePrefix,
+      vendorSourcePrefix,
+    );
+  } catch (_error: unknown) {
+    console.error('There was an error compiling imports.');
+    Deno.exit();
+  }
+
   const middleware: Middleware = async (ctx, next) => {
     if (!ctx.request.url.pathname.startsWith(vendorSourcePrefix)) {
       await next();
@@ -28,10 +52,10 @@ export const vendorSourceMiddleware = ({
 
     let transpileFileResult;
     if (importMapURL) {
-      transpileFileResult = compiledImports[importMapURL];
+      transpileFileResult = compiledVendorFiles[importMapURL];
     }
     if (!transpileFileResult) {
-      transpileFileResult = compiledImports[externalURL];
+      transpileFileResult = compiledVendorFiles[externalURL];
     }
     if (!transpileFileResult) {
       await next();
