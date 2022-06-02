@@ -6,15 +6,17 @@ import {
 } from '../importmap.ts';
 
 export type AppSourceProps = {
+  appDirPath: string;
   appSourcePrefix: string;
-  vendorSourcePrefix: string;
   importMapPath: string;
+  vendorSourcePrefix: string;
 };
 
 export const appSourceMiddleware = async ({
+  appDirPath,
   appSourcePrefix,
-  vendorSourcePrefix,
   importMapPath,
+  vendorSourcePrefix,
 }: AppSourceProps) => {
   const importMap = await getImportMap(importMapPath);
   const resolvedImports = await resolveImports(importMap);
@@ -22,7 +24,7 @@ export const appSourceMiddleware = async ({
   let compiledApplicationFiles: Record<string, string>;
   try {
     compiledApplicationFiles = await compileApplicationFiles(
-      `${Deno.cwd()}/app`,
+      appDirPath,
       importMap,
       resolvedImports,
       appSourcePrefix,

@@ -9,6 +9,7 @@ import { vendorSourceMiddleware } from './vendorSourceMiddleware.ts';
 
 export type ReflexMiddlewareProps = {
   Document: ElementType;
+  appDirPath?: string;
   appSourcePrefix?: string;
   importMapPath?: string;
   vendorSourcePrefix?: string;
@@ -16,14 +17,16 @@ export type ReflexMiddlewareProps = {
 
 export const reflexMiddleware = async ({
   Document,
+  appDirPath = resolveLocalPath('./app'),
   appSourcePrefix = '/.x',
   importMapPath = resolveLocalPath('./importMap.json'),
   vendorSourcePrefix = '/.v',
 }: ReflexMiddlewareProps) => {
   const appSource = await appSourceMiddleware({
+    appDirPath,
     appSourcePrefix,
-    vendorSourcePrefix,
     importMapPath,
+    vendorSourcePrefix,
   });
 
   const serverSideRender = serverSideRenderMiddleware({
