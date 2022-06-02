@@ -1,6 +1,6 @@
 # Reflex
 
-A [React](https://reactjs.org) framework for [Deno](https://deno.land) and [Oak](https://deno.land/x/oak). It uses React 18's Streaming Server Side Rendering to render the page and serves all files locally.
+A [React](https://reactjs.org) framework for [Deno](https://deno.land) and [Oak](https://deno.land/x/oak).
 
 ## Features
 
