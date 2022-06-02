@@ -23,7 +23,9 @@ export const getImportMap = async (path: string): Promise<ImportMap> => {
   return importMap;
 };
 
-export const resolveImports = async (): Promise<Record<string, string>> => {
+export const resolveImports = async (
+  importMap: ImportMap,
+): Promise<Record<string, string>> => {
   const resolvedImports: Record<string, string> = {};
 
   for (const [_key, path] of Object.entries(importMap.imports)) {
@@ -56,6 +58,9 @@ export const resolveImports = async (): Promise<Record<string, string>> => {
 
 export const compileImports = async (
   resolvedImports: Record<string, string>,
+  importMap: ImportMap,
+  appSourcePrefix: string,
+  vendorSourcePrefix: string,
 ): Promise<Record<string, string>> => {
   const compiledImports = await asyncMap<string>(
     async (local, specifier) => {
@@ -84,7 +89,13 @@ export const compileImports = async (
   return compiledImports;
 };
 
-export const compileApplicationFiles = async (directoryPath: string): Promise<
+export const compileApplicationFiles = async (
+  directoryPath: string,
+  importMap: ImportMap,
+  resolvedImports: Record<string, string>,
+  appSourcePrefix: string,
+  vendorSourcePrefix: string,
+): Promise<
   Record<string, string>
 > => {
   const transpileFiles: Record<string, string> = {};
@@ -127,7 +138,7 @@ try {
 
 export let resolvedImports: Record<string, string>;
 try {
-  resolvedImports = await resolveImports();
+  resolvedImports = await resolveImports(importMap);
 } catch (_error: unknown) {
   console.error('There was an error resolving imports.');
   Deno.exit();
@@ -135,7 +146,12 @@ try {
 
 export let compiledImports: Record<string, string>;
 try {
-  compiledImports = await compileImports(resolvedImports);
+  compiledImports = await compileImports(
+    resolvedImports,
+    importMap,
+    appSourcePrefix,
+    vendorSourcePrefix,
+  );
 } catch (_error: unknown) {
   console.error('There was an error compiling imports.');
   Deno.exit();
@@ -143,7 +159,13 @@ try {
 
 export let transpileFiles: Record<string, string>;
 try {
-  transpileFiles = await compileApplicationFiles(`${Deno.cwd()}/app`);
+  transpileFiles = await compileApplicationFiles(
+    `${Deno.cwd()}/app`,
+    importMap,
+    resolvedImports,
+    appSourcePrefix,
+    vendorSourcePrefix,
+  );
 } catch (_error: unknown) {
   console.error('There was an error compiling imports.');
   Deno.exit();
