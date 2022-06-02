@@ -5,25 +5,40 @@ import { walk } from 'https://deno.land/std@0.140.0/fs/mod.ts';
 import { ImportVisitor } from './ast/ImportVisitor.ts';
 import { asyncMap } from './object.ts';
 import { compileSource } from './compile.ts';
-import { fetchSourceFromPath } from './path.ts';
+import { fetchSourceFromPath, isPathAnURL } from './path.ts';
+import { resolve } from 'https://deno.land/std@0.140.0/path/mod.ts';
 
 const cache = createCache();
 const appSourcePrefix = '/.x';
 const vendorSourcePrefix = '/.v';
 
-export const importMap = new TextDecoder('utf-8').decode(
-  await Deno.readFile(`${Deno.cwd()}/importMap.json`),
-);
+export let importMap: ImportMap;
+try {
+  const decoder = new TextDecoder();
+  const file = await Deno.readFile(`${Deno.cwd()}/importMap.json`);
+  importMap = JSON.parse(decoder.decode(file)) as ImportMap;
+} catch (_error: unknown) {
+  console.error('No importMap.json found.');
+  Deno.exit();
+}
 
 export type ImportMap = {
   imports: Record<string, string>;
 };
 
-export const parsedImportMap = JSON.parse(importMap) as ImportMap;
 export const resolvedImports: Record<string, string> = {};
 
-for (const [_key, path] of Object.entries(parsedImportMap.imports)) {
-  const graph = await createGraph(path, {
+for (const [_key, path] of Object.entries(importMap.imports)) {
+  let resolvedPath: string;
+  const isURL = isPathAnURL(path);
+  if (isURL) {
+    resolvedPath = path;
+  } else {
+    resolvedPath = resolve(`${Deno.cwd()}/${path}`);
+    resolvedPath = `file://${resolvedPath}`;
+    // resolvedPath = new URL(path, import.meta.url);
+  }
+  const graph = await createGraph(resolvedPath.toString(), {
     kind: 'codeOnly',
     cacheInfo: cache.cacheInfo,
     load: cache.load,
@@ -31,7 +46,11 @@ for (const [_key, path] of Object.entries(parsedImportMap.imports)) {
   const { modules } = graph.toJSON();
   for (const module of modules) {
     const { specifier, local } = module;
-    resolvedImports[specifier] = String(local);
+    let modulePath = local || specifier;
+    if (modulePath.startsWith('file://')) {
+      modulePath = modulePath.replace('file://', '');
+    }
+    resolvedImports[specifier] = modulePath;
   }
 }
 
@@ -46,7 +65,7 @@ export const compiledImports = await asyncMap<string>(
           specifier,
           appSourcePrefix,
           vendorSourcePrefix,
-          parsedImports: parsedImportMap.imports,
+          parsedImports: importMap.imports,
           resolvedImports,
         }),
       );
@@ -82,7 +101,7 @@ for await (
       directoryPath,
       appSourcePrefix,
       vendorSourcePrefix,
-      parsedImports: parsedImportMap.imports,
+      parsedImports: importMap.imports,
       resolvedImports,
     }),
   );

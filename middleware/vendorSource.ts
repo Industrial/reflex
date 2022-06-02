@@ -1,6 +1,6 @@
 import { Middleware } from 'https://deno.land/x/oak@v10.6.0/mod.ts';
 
-import { compiledImports, parsedImportMap } from '../importmap.ts';
+import { compiledImports, importMap } from '../importmap.ts';
 import { internalToExternalURL } from '../path.ts';
 
 export type VendorSourceProps = {
@@ -16,7 +16,7 @@ export const vendorSource = ({ vendorSourcePrefix }: VendorSourceProps) => {
 
     // Find it in the import map
     const path = ctx.request.url.pathname.replace(`${vendorSourcePrefix}/`, '');
-    const importMapURL = parsedImportMap.imports[path];
+    const importMapURL = importMap.imports[path];
 
     // Also try the external url directly in the compiled imports
     const externalURL = internalToExternalURL(
