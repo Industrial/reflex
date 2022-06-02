@@ -1,0 +1,10 @@
+{
+  "editor.defaultFormatter": "denoland.vscode-deno",
+  "deno.enable": true,
+  "deno.lint": true,
+  "deno.config": "deno.json",
+  "deno.unstable": true,
+  "deno.suggest.imports.hosts": {
+    "https://deno.land": false
+  }
+}
