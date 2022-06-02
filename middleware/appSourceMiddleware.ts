@@ -5,7 +5,7 @@ export type AppSourceProps = {
   appSourcePrefix: string;
 };
 
-export const appSource = ({ appSourcePrefix }: AppSourceProps) => {
+export const appSourceMiddleware = ({ appSourcePrefix }: AppSourceProps) => {
   const middleware: Middleware = async (ctx, next) => {
     if (!ctx.request.url.pathname.startsWith(appSourcePrefix)) {
       await next();

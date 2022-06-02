@@ -4,6 +4,4 @@ export * from './importmap.ts';
 export * from './middleware/mod.ts';
 export * from './object.ts';
 export * from './path.ts';
-export * from './reduce.ts';
 export * from './stream.ts';
-export * from './types.ts';

@@ -3,11 +3,13 @@ import { Middleware } from 'https://deno.land/x/oak@v10.6.0/mod.ts';
 import { compiledImports, importMap } from '../importmap.ts';
 import { internalToExternalURL } from '../path.ts';
 
-export type VendorSourceProps = {
+export type VendorSourceMiddlewareProps = {
   vendorSourcePrefix: string;
 };
 
-export const vendorSource = ({ vendorSourcePrefix }: VendorSourceProps) => {
+export const vendorSourceMiddleware = ({
+  vendorSourcePrefix,
+}: VendorSourceMiddlewareProps) => {
   const middleware: Middleware = async (ctx, next) => {
     if (!ctx.request.url.pathname.startsWith(vendorSourcePrefix)) {
       await next();

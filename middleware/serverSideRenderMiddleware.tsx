@@ -4,11 +4,13 @@ import { Middleware } from 'https://deno.land/x/oak@v10.6.0/mod.ts';
 
 import { Document } from '../../app/Document.tsx';
 
-export type ServerSideRender = {
+export type ServerSideRenderMiddlewareProps = {
   vendorSourcePrefix: string;
 };
 
-export const serverSideRender = ({ vendorSourcePrefix }: ServerSideRender) => {
+export const serverSideRenderMiddleware = (
+  { vendorSourcePrefix }: ServerSideRenderMiddlewareProps,
+) => {
   const middleware: Middleware = async (ctx) => {
     ctx.response.headers.set('Content-Type', 'text/html; charset=utf-8');
 

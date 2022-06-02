@@ -13,6 +13,7 @@ const parserOptions = {
   tsx: true,
   dynamicImport: true,
 };
+
 export const compileSource = async (
   source: string,
   visitor?: Visitor,
@@ -23,10 +24,14 @@ export const compileSource = async (
       target: 'es2022',
     },
   });
+
   const ast = await parseSync(transformResult.code, parserOptions);
+
   if (visitor) {
     visitor.visitProgram(ast);
   }
+
   const { code } = printSync(ast, { minify: true });
+
   return code;
 };
