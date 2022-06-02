@@ -1,0 +1,65 @@
+{
+  "tasks": {
+    "dev": "deno task start",
+    "start": "deno run -A --unstable --no-check server.ts",
+    "cache": "deno cache --reload --no-check server.ts"
+  },
+  "importMap": "importMap.json",
+  "compilerOptions": {
+    "lib": [
+      "deno.window",
+      "es2020",
+      "esnext",
+      "dom",
+      "esnext.asynciterable"
+    ],
+    "allowJs": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "checkJs": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "keyofStringsOnly": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": false,
+    "noImplicitThis": true,
+    "noImplicitUseStrict": false,
+    "noStrictGenericChecks": false,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "strict": true,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true
+  },
+  "lint": {
+    "files": {
+      "include": [
+        "./"
+      ]
+    },
+    "rules": {
+      "tags": [
+        "recommended"
+      ]
+    }
+  },
+  "fmt": {
+    "files": {
+      "include": [
+        "./"
+      ]
+    },
+    "options": {
+      "useTabs": false,
+      "lineWidth": 80,
+      "indentWidth": 2,
+      "singleQuote": true,
+      "proseWrap": "preserve"
+    }
+  }
+}
