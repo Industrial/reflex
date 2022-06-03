@@ -12,6 +12,7 @@ export type ReflexMiddlewareProps = {
   appDirPath?: string;
   appSourcePrefix?: string;
   importMapPath?: string;
+  modifyStream?: (applicationStream: ReadableStream) => ReadableStream;
   vendorSourcePrefix?: string;
 };
 
@@ -20,6 +21,7 @@ export const reflexMiddleware = async ({
   appDirPath = resolveLocalPath('./app'),
   appSourcePrefix = '/.x',
   importMapPath = resolveLocalPath('./importMap.json'),
+  modifyStream,
   vendorSourcePrefix = '/.v',
 }: ReflexMiddlewareProps) => {
   const appSource = await appSourceMiddleware({
@@ -32,6 +34,7 @@ export const reflexMiddleware = async ({
   const serverSideRender = serverSideRenderMiddleware({
     Document,
     vendorSourcePrefix,
+    modifyStream,
   });
 
   const staticFile = staticFileMiddleware();

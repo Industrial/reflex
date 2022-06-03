@@ -4,19 +4,27 @@ import { Middleware } from 'https://deno.land/x/oak@v10.6.0/mod.ts';
 
 export type ServerSideRenderMiddlewareProps = {
   Document: ElementType;
+  modifyStream?: (applicationStream: ReadableStream) => ReadableStream;
   vendorSourcePrefix: string;
 };
 
 export const serverSideRenderMiddleware = ({
   Document,
+  modifyStream,
   vendorSourcePrefix,
 }: ServerSideRenderMiddlewareProps) => {
   const middleware: Middleware = async (ctx) => {
     ctx.response.headers.set('Content-Type', 'text/html; charset=utf-8');
 
-    ctx.response.body = await renderToReadableStream(
+    let stream: ReadableStream = await renderToReadableStream(
       <Document vendorSourcePrefix={vendorSourcePrefix} />,
     );
+
+    if (modifyStream) {
+      stream = modifyStream(stream);
+    }
+
+    ctx.response.body = stream;
   };
 
   return middleware;
