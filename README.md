@@ -44,3 +44,91 @@ await app.listen({
   port,
 });
 ```
+
+### `app/Document.tsx`
+
+Create a file called `Document.tsx` in the `app` directory.
+
+```ts
+// This is a module that is pulled from the `importMap.json` file.
+import React from 'react';
+
+// This is the App file, the root component of your app.
+import { App } from './App.tsx';
+
+export type DocumentProps = {
+  // Path the vendor files will be served from. By default it's /.v/*.
+  vendorSourcePrefix: string;
+};
+
+export const Document = ({ vendorSourcePrefix }: DocumentProps) => {
+  return (
+    <html>
+      <head>
+        <title>React Streaming</title>
+      </head>
+      <body>
+        <div id='root'>
+          <App />
+        </div>
+        {/* This script loads and hydrates the application in the browser. It loads <App /> under the id `root`. */}
+        <script
+          type='module'
+          defer
+          dangerouslySetInnerHTML={{
+            __html: `
+                import { createElement } from '${vendorSourcePrefix}/react';
+                import { createRoot, hydrateRoot } from '${vendorSourcePrefix}/react-dom/client';
+                import { App } from '/.x/App.tsx';
+                const rootElement = document.getElementById('root');
+                const appElement = createElement(App);
+                hydrateRoot(rootElement, appElement);
+                // const root = createRoot(rootElement);
+                // root.render(appElement);
+              `,
+          }}
+        >
+        </script>
+      </body>
+    </html>
+  );
+};
+```
+
+### `app/App.tsx`
+
+Create a file called `App.tsx` in the `app` directory.
+
+```ts
+// This is a module that is pulled from the `importMap.json` file.
+import React, { Suspense } from 'react';
+
+export const App = () => {
+  return (
+    <div>
+      <h1>Application</h1>
+      <p>My application!</p>
+    </div>
+  );
+};
+```
+
+### `importMap.json`
+
+Create a file called `importMap.json` in the root of your project.
+
+```json
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.1.0?dev"
+  }
+}
+```
+
+### Run!
+
+Now run the server
+
+```bash
+deno run -A --unstable --no-check server.ts
+```
