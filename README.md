@@ -9,6 +9,10 @@ A [React](https://reactjs.org) framework for [Deno](https://deno.land) and [Oak]
 - Serves all vendor files locally, ensuring that your users get what you expect and you don't need an external CDN.
 - Caching out of the box using the Deno cache.
 
+## Support
+
+Create an [Issue](https://github.com/Industrial/reflex/issues) or come hang out on [Discord](https://discord.gg/CvPVVeVk)!
+
 ## Quick Start
 
 See https://github.com/Industrial/create-reflex-app for a quick start guide.
