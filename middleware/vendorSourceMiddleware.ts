@@ -21,18 +21,12 @@ export const vendorSourceMiddleware = async ({
   const importMap = await getImportMap(importMapPath);
   const resolvedImports = await resolveImports(importMap);
 
-  let compiledVendorFiles: Record<string, string>;
-  try {
-    compiledVendorFiles = await compileVendorFiles(
-      resolvedImports,
-      importMap,
-      appSourcePrefix,
-      vendorSourcePrefix,
-    );
-  } catch (_error: unknown) {
-    console.error('There was an error compiling imports.');
-    Deno.exit();
-  }
+  const compiledVendorFiles = await compileVendorFiles(
+    resolvedImports,
+    importMap,
+    appSourcePrefix,
+    vendorSourcePrefix,
+  );
 
   const middleware: Middleware = async (ctx, next) => {
     if (!ctx.request.url.pathname.startsWith(vendorSourcePrefix)) {
