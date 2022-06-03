@@ -124,7 +124,9 @@ Create a file called `importMap.json` in the root of your project.
 ```json
 {
   "imports": {
-    "react": "https://esm.sh/react@18.1.0?dev"
+    "react": "https://esm.sh/react@18.1.0?dev",
+    "react-dom": "https://esm.sh/react-dom@18.1.0?dev",
+    "react-dom/client": "https://esm.sh/react-dom@18.1.0/client?dev"
   }
 }
 ```
