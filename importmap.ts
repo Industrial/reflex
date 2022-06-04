@@ -71,8 +71,16 @@ export const compileVendorFiles = async (
 ): Promise<Record<string, string>> => {
   const compiledVendorFiles = await asyncMap<string>(
     async (local, specifier) => {
-      const path = local || specifier;
-      const source = await fetchSourceFromPath(path);
+      let source: string;
+      try {
+        source = await fetchSourceFromPath(local || specifier);
+      } catch (error: unknown) {
+        if ((error as Error).message.includes('Is a directory')) {
+          return local;
+        }
+        throw error;
+      }
+
       try {
         const compiled = await compileSource(
           source,
