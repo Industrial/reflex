@@ -59,7 +59,17 @@ export class ImportVisitor extends Visitor {
     // Local import.
     if (node.value.startsWith('.')) {
       if (this.directoryPath) {
-        node.value = resolve(`${this.appSourcePrefix}/${node.value}`);
+        const specifierPath = resolve(this.directoryPath, this.specifier);
+        const specifierDirectoryPath = dirname(specifierPath);
+        const normalized = resolve(specifierDirectoryPath, node.value);
+
+        if (!normalized.startsWith(this.directoryPath)) {
+          throw new Error(`Local import must be in app source. ('${node.value}' in '${specifierPath}')`);
+        }
+
+        const withoutBasePath = normalized.replace(this.directoryPath, '');
+
+        node.value = `${this.appSourcePrefix}${withoutBasePath}`;
         return node;
       }
 
