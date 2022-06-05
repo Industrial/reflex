@@ -17,6 +17,8 @@ Create an [Issue](https://github.com/Industrial/reflex/issues) or come hang out 
 
 See https://github.com/Industrial/create-reflex-app for a quick start guide.
 
+See https://github.com/Industrial/todos for an app I'm building with Reflex.
+
 ## Guide
 
 ### `server.ts`
