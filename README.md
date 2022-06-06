@@ -15,9 +15,9 @@ Create an [Issue](https://github.com/Industrial/reflex/issues) or come hang out 
 
 ## Quick Start
 
-See https://github.com/Industrial/create-reflex-app for a quick start guide.
+See [create-reflex-app](https://github.com/Industrial/create-reflex-app) for a quick start guide.
 
-See https://github.com/Industrial/todo for an app I'm building with Reflex.
+See [todo](https://github.com/Industrial/todo) for an app I'm building with Reflex.
 
 ## Guide
 
