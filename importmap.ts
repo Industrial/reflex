@@ -8,6 +8,7 @@ import { compileSource } from './compile.ts';
 import { fetchSourceFromPath, isPathAnURL } from './path.ts';
 import { resolve } from 'https://deno.land/std@0.140.0/path/mod.ts';
 import { hashSource } from './hash.ts';
+import { ensureCacheDirectory } from './cache.ts';
 
 const cache = createCache();
 
@@ -79,13 +80,11 @@ export const compileVendorFiles = async ({
   resolvedImports,
   vendorSourcePrefix,
 }: CompileVendorFileProps): Promise<Record<string, string>> => {
-  await Deno.mkdir(cacheDirectoryPath, { recursive: true });
-  await Deno.mkdir(`${cacheDirectoryPath}${appSourcePrefix}`, {
-    recursive: true,
-  });
-  await Deno.mkdir(`${cacheDirectoryPath}${vendorSourcePrefix}`, {
-    recursive: true,
-  });
+  await ensureCacheDirectory(
+    cacheDirectoryPath,
+    appSourcePrefix,
+    vendorSourcePrefix,
+  );
 
   const compiledVendorFiles = await asyncMap<string>(
     async (local, specifier) => {
@@ -100,9 +99,9 @@ export const compileVendorFiles = async ({
       }
 
       const hash = hashSource(source);
-      const path = `${cacheDirectoryPath}${vendorSourcePrefix}/${hash}`;
+      const hashPath = `${cacheDirectoryPath}${vendorSourcePrefix}/${hash}`;
       try {
-        const cached = await Deno.readTextFile(path);
+        const cached = await Deno.readTextFile(hashPath);
         return cached;
       } catch (_error: unknown) {
         try {
@@ -116,7 +115,7 @@ export const compileVendorFiles = async ({
               resolvedImports,
             }),
           );
-          await Deno.writeTextFile(path, compiled);
+          await Deno.writeTextFile(hashPath, compiled);
           return compiled;
         } catch (_error: unknown) {
           console.error(`Error compiling ${specifier}. Using source.`);
@@ -130,18 +129,34 @@ export const compileVendorFiles = async ({
   return compiledVendorFiles;
 };
 
-export const compileApplicationFiles = async (
-  directoryPath: string,
-  importMap: ImportMap,
-  resolvedImports: Record<string, string>,
-  appSourcePrefix: string,
-  vendorSourcePrefix: string,
-): Promise<
+export type CompileApplicationFilesProps = {
+  appSourcePrefix: string;
+  cacheDirectoryPath: string;
+  sourceDirectoryPath: string;
+  importMap: ImportMap;
+  resolvedImports: Record<string, string>;
+  vendorSourcePrefix: string;
+};
+
+export const compileApplicationFiles = async ({
+  appSourcePrefix,
+  cacheDirectoryPath,
+  sourceDirectoryPath,
+  importMap,
+  resolvedImports,
+  vendorSourcePrefix,
+}: CompileApplicationFilesProps): Promise<
   Record<string, string>
 > => {
+  await ensureCacheDirectory(
+    cacheDirectoryPath,
+    appSourcePrefix,
+    vendorSourcePrefix,
+  );
+
   const transpileFiles: Record<string, string> = {};
   for await (
-    const entry of walk(directoryPath, {
+    const entry of walk(sourceDirectoryPath, {
       includeDirs: false,
       followSymlinks: true,
       exts: [
@@ -152,19 +167,28 @@ export const compileApplicationFiles = async (
       ],
     })
   ) {
-    const path = entry.path.replace(`${directoryPath}/`, '');
+    const path = entry.path.replace(`${sourceDirectoryPath}/`, '');
     const source = await Deno.readTextFile(entry.path);
-    transpileFiles[path] = await compileSource(
-      source,
-      new ImportVisitor({
-        specifier: path,
-        directoryPath,
-        appSourcePrefix,
-        vendorSourcePrefix,
-        parsedImports: importMap.imports,
-        resolvedImports,
-      }),
-    );
+
+    const hash = hashSource(source);
+    const hashPath = `${cacheDirectoryPath}${appSourcePrefix}/${hash}`;
+    try {
+      transpileFiles[path] = await Deno.readTextFile(hashPath);
+    } catch (_error: unknown) {
+      const compiled = await compileSource(
+        source,
+        new ImportVisitor({
+          specifier: path,
+          sourceDirectoryPath,
+          appSourcePrefix,
+          vendorSourcePrefix,
+          parsedImports: importMap.imports,
+          resolvedImports,
+        }),
+      );
+      await Deno.writeTextFile(hashPath, compiled);
+      transpileFiles[path] = compiled;
+    }
   }
   return transpileFiles;
 };

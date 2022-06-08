@@ -9,29 +9,30 @@ import { DocumentElement } from '../types.ts';
 
 export type ReflexMiddlewareProps = {
   Document: DocumentElement;
-  appDirPath?: string;
   appSourcePrefix?: string;
   cacheDirectoryPath?: string;
   importMapPath?: string;
   modifyStream?: (applicationStream: ReadableStream) => ReadableStream;
+  sourceDirectoryPath?: string;
   vendorSourcePrefix?: string;
 };
 
 export const reflexMiddleware = async ({
   Document,
-  appDirPath = resolveLocalPath('./app'),
   appSourcePrefix = '/.x',
   cacheDirectoryPath = './.cache',
   importMapPath = resolveLocalPath('./importMap.json'),
   modifyStream,
+  sourceDirectoryPath = resolveLocalPath('./app'),
   vendorSourcePrefix = '/.v',
 }: ReflexMiddlewareProps) => {
   const startTime = Date.now();
 
   const appSource = await appSourceMiddleware({
-    appDirPath,
     appSourcePrefix,
+    cacheDirectoryPath,
     importMapPath,
+    sourceDirectoryPath,
     vendorSourcePrefix,
   });
 

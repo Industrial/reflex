@@ -14,7 +14,7 @@ import {
 
 export type ImportVisitorProps = {
   specifier: string;
-  directoryPath?: string;
+  sourceDirectoryPath?: string;
   appSourcePrefix: string;
   vendorSourcePrefix: string;
   parsedImports: Record<string, string>;
@@ -23,7 +23,7 @@ export type ImportVisitorProps = {
 
 export class ImportVisitor extends Visitor {
   specifier: string;
-  directoryPath?: string;
+  sourceDirectoryPath?: string;
   appSourcePrefix: string;
   vendorSourcePrefix: string;
 
@@ -32,7 +32,7 @@ export class ImportVisitor extends Visitor {
 
   constructor({
     specifier,
-    directoryPath,
+    sourceDirectoryPath,
     appSourcePrefix,
     vendorSourcePrefix,
     parsedImports,
@@ -40,7 +40,7 @@ export class ImportVisitor extends Visitor {
   }: ImportVisitorProps) {
     super();
     this.specifier = specifier;
-    this.directoryPath = directoryPath;
+    this.sourceDirectoryPath = sourceDirectoryPath;
     this.appSourcePrefix = appSourcePrefix;
     this.vendorSourcePrefix = vendorSourcePrefix;
     this.parsedImports = parsedImports;
@@ -58,16 +58,21 @@ export class ImportVisitor extends Visitor {
 
     // Local import.
     if (node.value.startsWith('.')) {
-      if (this.directoryPath) {
-        const specifierPath = resolve(this.directoryPath, this.specifier);
+      if (this.sourceDirectoryPath) {
+        const specifierPath = resolve(this.sourceDirectoryPath, this.specifier);
         const specifierDirectoryPath = dirname(specifierPath);
         const normalized = resolve(specifierDirectoryPath, node.value);
 
-        if (!normalized.startsWith(this.directoryPath)) {
-          throw new Error(`Local import must be in app source. ('${node.value}' in '${specifierPath}')`);
+        if (!normalized.startsWith(this.sourceDirectoryPath)) {
+          throw new Error(
+            `Local import must be in app source. ('${node.value}' in '${specifierPath}')`,
+          );
         }
 
-        const withoutBasePath = normalized.replace(this.directoryPath, '');
+        const withoutBasePath = normalized.replace(
+          this.sourceDirectoryPath,
+          '',
+        );
 
         node.value = `${this.appSourcePrefix}${withoutBasePath}`;
         return node;

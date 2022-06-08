@@ -6,28 +6,31 @@ import {
 } from '../importmap.ts';
 
 export type AppSourceProps = {
-  appDirPath: string;
   appSourcePrefix: string;
+  cacheDirectoryPath: string;
   importMapPath: string;
+  sourceDirectoryPath: string;
   vendorSourcePrefix: string;
 };
 
 export const appSourceMiddleware = async ({
-  appDirPath,
   appSourcePrefix,
+  cacheDirectoryPath,
   importMapPath,
+  sourceDirectoryPath,
   vendorSourcePrefix,
 }: AppSourceProps) => {
   const importMap = await getImportMap(importMapPath);
   const resolvedImports = await resolveImports(importMap);
 
-  const compiledApplicationFiles = await compileApplicationFiles(
-    appDirPath,
+  const compiledApplicationFiles = await compileApplicationFiles({
+    appSourcePrefix,
+    cacheDirectoryPath,
     importMap,
     resolvedImports,
-    appSourcePrefix,
+    sourceDirectoryPath,
     vendorSourcePrefix,
-  );
+  });
 
   const middleware: Middleware = async (ctx, next) => {
     if (!ctx.request.url.pathname.startsWith(appSourcePrefix)) {
