@@ -1,3 +1,4 @@
+[![Open Issues](https://img.shields.io/github/Industrial/reflex/status)](https://github.com/Industrial/reflex)
 [![GitHub Super-Linter](https://github.com/Industrial/reflex/workflows/Lint%20Code%20Base/badge.svg)](https://github.com/marketplace/actions/super-linter)
 
 # Reflex
