@@ -7,6 +7,7 @@ import { asyncMap } from './object.ts';
 import { compileSource } from './compile.ts';
 import { fetchSourceFromPath, isPathAnURL } from './path.ts';
 import { resolve } from 'https://deno.land/std@0.140.0/path/mod.ts';
+import { hashSource } from './hash.ts';
 
 const cache = createCache();
 
@@ -63,12 +64,29 @@ export const resolveImports = async (
   return resolvedImports;
 };
 
-export const compileVendorFiles = async (
-  resolvedImports: Record<string, string>,
-  importMap: ImportMap,
-  appSourcePrefix: string,
-  vendorSourcePrefix: string,
-): Promise<Record<string, string>> => {
+export type CompileVendorFileProps = {
+  appSourcePrefix: string;
+  cacheDirectoryPath: string;
+  importMap: ImportMap;
+  resolvedImports: Record<string, string>;
+  vendorSourcePrefix: string;
+};
+
+export const compileVendorFiles = async ({
+  appSourcePrefix,
+  cacheDirectoryPath,
+  importMap,
+  resolvedImports,
+  vendorSourcePrefix,
+}: CompileVendorFileProps): Promise<Record<string, string>> => {
+  await Deno.mkdir(cacheDirectoryPath, { recursive: true });
+  await Deno.mkdir(`${cacheDirectoryPath}${appSourcePrefix}`, {
+    recursive: true,
+  });
+  await Deno.mkdir(`${cacheDirectoryPath}${vendorSourcePrefix}`, {
+    recursive: true,
+  });
+
   const compiledVendorFiles = await asyncMap<string>(
     async (local, specifier) => {
       let source: string;
@@ -81,21 +99,29 @@ export const compileVendorFiles = async (
         throw error;
       }
 
+      const hash = hashSource(source);
+      const path = `${cacheDirectoryPath}${vendorSourcePrefix}/${hash}`;
       try {
-        const compiled = await compileSource(
-          source,
-          new ImportVisitor({
-            specifier,
-            appSourcePrefix,
-            vendorSourcePrefix,
-            parsedImports: importMap.imports,
-            resolvedImports,
-          }),
-        );
-        return compiled;
+        const cached = await Deno.readTextFile(path);
+        return cached;
       } catch (_error: unknown) {
-        console.error(`Error compiling ${specifier}. Using source.`);
-        return source;
+        try {
+          const compiled = await compileSource(
+            source,
+            new ImportVisitor({
+              specifier,
+              appSourcePrefix,
+              vendorSourcePrefix,
+              parsedImports: importMap.imports,
+              resolvedImports,
+            }),
+          );
+          await Deno.writeTextFile(path, compiled);
+          return compiled;
+        } catch (_error: unknown) {
+          console.error(`Error compiling ${specifier}. Using source.`);
+          return source;
+        }
       }
     },
     resolvedImports,

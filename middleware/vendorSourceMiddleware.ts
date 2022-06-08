@@ -9,24 +9,27 @@ import { internalToExternalURL } from '../path.ts';
 
 export type VendorSourceMiddlewareProps = {
   appSourcePrefix: string;
-  vendorSourcePrefix: string;
+  cacheDirectoryPath: string;
   importMapPath: string;
+  vendorSourcePrefix: string;
 };
 
 export const vendorSourceMiddleware = async ({
   appSourcePrefix,
-  vendorSourcePrefix,
+  cacheDirectoryPath,
   importMapPath,
+  vendorSourcePrefix,
 }: VendorSourceMiddlewareProps) => {
   const importMap = await getImportMap(importMapPath);
   const resolvedImports = await resolveImports(importMap);
 
-  const compiledVendorFiles = await compileVendorFiles(
-    resolvedImports,
-    importMap,
+  const compiledVendorFiles = await compileVendorFiles({
     appSourcePrefix,
+    cacheDirectoryPath,
+    importMap,
+    resolvedImports,
     vendorSourcePrefix,
-  );
+  });
 
   const middleware: Middleware = async (ctx, next) => {
     if (!ctx.request.url.pathname.startsWith(vendorSourcePrefix)) {

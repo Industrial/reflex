@@ -4,7 +4,6 @@
     "start": "deno run -A --unstable --no-check server.ts",
     "cache": "deno cache --reload --no-check server.ts"
   },
-  "importMap": "importMap.json",
   "compilerOptions": {
     "lib": [
       "deno.window",
