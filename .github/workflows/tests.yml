@@ -2,9 +2,10 @@ name: Tests
 on:
   push:
 jobs:
-  run:
+  test:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - uses: denoland/setup-deno@v1
         with:
           deno-version: canary
