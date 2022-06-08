@@ -1,9 +1,9 @@
+name: Pull Request
 on:
   push:
     branches:
     - "feature/*"
     - "bugfix/*"
-
 jobs:
   pull-request:
     runs-on: ubuntu-latest
