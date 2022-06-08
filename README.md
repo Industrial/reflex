@@ -1,3 +1,5 @@
+[![GitHub Super-Linter](https://github.com/Industrial/reflex/workflows/Lint%20Code%20Base/badge.svg)](https://github.com/marketplace/actions/super-linter)
+
 # Reflex
 
 A [React](https://reactjs.org) framework for [Deno](https://deno.land) and [Oak](https://deno.land/x/oak).
