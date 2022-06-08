@@ -1,8 +1,9 @@
 {
   "tasks": {
+    "cache": "deno cache --reload --no-check server.ts",
     "dev": "deno task start",
     "start": "deno run -A --unstable --no-check server.ts",
-    "cache": "deno cache --reload --no-check server.ts"
+    "test": "deno test --no-check"
   },
   "compilerOptions": {
     "lib": [
