@@ -26,7 +26,6 @@ export const vendorSourceMiddleware = async ({
   const compiledVendorFiles = await compileVendorFiles({
     appSourcePrefix,
     cacheDirectoryPath,
-    importMap,
     resolvedImports,
     vendorSourcePrefix,
   });
