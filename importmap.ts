@@ -1,14 +1,13 @@
 import { createCache } from 'https://deno.land/x/deno_cache@0.4.1/mod.ts';
 import { createGraph } from 'https://deno.land/x/deno_graph@0.27.0/mod.ts';
+import { resolve } from 'https://deno.land/std@0.140.0/path/mod.ts';
 import { walk } from 'https://deno.land/std@0.140.0/fs/mod.ts';
 
 import { ImportVisitor } from './ast/ImportVisitor.ts';
 import { asyncMap } from './object.ts';
 import { compileSource } from './compile.ts';
+import { ensureCachedFile, ensureCacheDirectory } from './cache.ts';
 import { fetchSourceFromPath, isPathAnURL } from './path.ts';
-import { resolve } from 'https://deno.land/std@0.140.0/path/mod.ts';
-import { hashSource } from './hash.ts';
-import { ensureCacheDirectory } from './cache.ts';
 
 const cache = createCache();
 
@@ -27,65 +26,68 @@ export const getImportMap = async (path: string): Promise<ImportMap> => {
   return importMap;
 };
 
-let resolvedImports: Record<string, string>;
-export const resolveImports = async (
-  importMap: ImportMap,
-): Promise<Record<string, string>> => {
-  if (resolvedImports) {
-    return resolvedImports;
-  }
-
-  resolvedImports = {};
-
-  for (const [_key, path] of Object.entries(importMap.imports)) {
-    let resolvedPath: string;
-    const isURL = isPathAnURL(path);
-    if (isURL) {
-      resolvedPath = path;
-    } else {
-      resolvedPath = resolve(`${Deno.cwd()}/${path}`);
-      resolvedPath = `file://${resolvedPath}`;
-    }
-    const graph = await createGraph(resolvedPath.toString(), {
-      kind: 'codeOnly',
-      cacheInfo: cache.cacheInfo,
-      load: cache.load,
-    });
-    const { modules } = graph.toJSON();
-    for (const module of modules) {
-      const { specifier, local } = module;
-      let modulePath = local || specifier;
-      if (modulePath.startsWith('file://')) {
-        modulePath = modulePath.replace('file://', '');
-      }
-      resolvedImports[specifier] = modulePath;
-    }
-  }
-
-  return resolvedImports;
+export type ResolveImportsProps = {
+  cacheDirectoryPath: string;
+  importMap: ImportMap;
+  importMapPath: string;
 };
 
-export const ensureCachedFile = async (
-  cacheFilePath: string,
-  source: string,
-  compile: (hash: string, hashPath: string) => Promise<string>,
-) => {
-  const hash = hashSource(source);
-  const hashPath = `${cacheFilePath}/${hash}`;
-  try {
-    const cached = await Deno.readTextFile(hashPath);
-    return cached;
-  } catch (_error: unknown) {
-    const compiled = await compile(hash, hashPath);
-    await Deno.writeTextFile(hashPath, compiled);
-    return compiled;
-  }
+export const resolveImports = async ({
+  cacheDirectoryPath,
+  importMap,
+  importMapPath,
+}: ResolveImportsProps): Promise<Record<string, string>> => {
+  const source = await Deno.readTextFile(importMapPath);
+
+  const compiled = await ensureCachedFile(
+    cacheDirectoryPath,
+    source,
+    async () => {
+      const resolvedImports: Record<string, string> = {};
+
+      for (const [_key, path] of Object.entries(importMap.imports)) {
+        let resolvedPath: string;
+        const isURL = isPathAnURL(path);
+
+        if (isURL) {
+          resolvedPath = path;
+        } else {
+          resolvedPath = resolve(`${Deno.cwd()}/${path}`);
+          resolvedPath = `file://${resolvedPath}`;
+        }
+
+        const graph = await createGraph(resolvedPath.toString(), {
+          kind: 'codeOnly',
+          cacheInfo: cache.cacheInfo,
+          load: cache.load,
+        });
+
+        const { modules } = graph.toJSON();
+
+        for (const module of modules) {
+          const { specifier, local } = module;
+          let modulePath = local || specifier;
+
+          if (modulePath.startsWith('file://')) {
+            modulePath = modulePath.replace('file://', '');
+          }
+
+          resolvedImports[specifier] = modulePath;
+        }
+      }
+
+      return JSON.stringify(resolvedImports);
+    },
+  );
+
+  return JSON.parse(compiled);
 };
 
 export type CompileVendorFileProps = {
   appSourcePrefix: string;
   cacheDirectoryPath: string;
   local: string;
+  resolvedImports: Record<string, string>;
   specifier: string;
   vendorSourcePrefix: string;
 };
@@ -94,6 +96,7 @@ export const compileVendorFile = async ({
   appSourcePrefix,
   cacheDirectoryPath,
   local,
+  resolvedImports,
   specifier,
   vendorSourcePrefix,
 }: CompileVendorFileProps) => {
@@ -156,6 +159,7 @@ export const compileVendorFiles = async ({
         appSourcePrefix,
         cacheDirectoryPath,
         local,
+        resolvedImports,
         specifier,
         vendorSourcePrefix,
       });

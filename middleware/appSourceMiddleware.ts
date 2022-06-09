@@ -21,7 +21,11 @@ export const appSourceMiddleware = async ({
   vendorSourcePrefix,
 }: AppSourceProps) => {
   const importMap = await getImportMap(importMapPath);
-  const resolvedImports = await resolveImports(importMap);
+  const resolvedImports = await resolveImports({
+    cacheDirectoryPath,
+    importMap,
+    importMapPath,
+  });
 
   const middleware: Middleware = async (ctx, next) => {
     if (!ctx.request.url.pathname.startsWith(appSourcePrefix)) {

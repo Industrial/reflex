@@ -21,7 +21,11 @@ export const vendorSourceMiddleware = async ({
   vendorSourcePrefix,
 }: VendorSourceMiddlewareProps) => {
   const importMap = await getImportMap(importMapPath);
-  const resolvedImports = await resolveImports(importMap);
+  const resolvedImports = await resolveImports({
+    cacheDirectoryPath,
+    importMap,
+    importMapPath,
+  });
 
   const middleware: Middleware = async (ctx, next) => {
     if (!ctx.request.url.pathname.startsWith(vendorSourcePrefix)) {
@@ -43,10 +47,11 @@ export const vendorSourceMiddleware = async ({
     const resolvedImport = resolvedImports[importURL] || importURL;
 
     const transpileFileResult = await compileVendorFile({
-      specifier: importURL,
-      local: resolvedImport,
       appSourcePrefix,
       cacheDirectoryPath,
+      local: resolvedImport,
+      resolvedImports,
+      specifier: importURL,
       vendorSourcePrefix,
     });
 
