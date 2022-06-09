@@ -185,8 +185,6 @@ export const compileApplicationFile = async ({
   vendorSourcePrefix,
   specifier,
 }: CompileApplicationFileProps) => {
-  console.log('compileApplicationFile', specifier);
-
   const source = await Deno.readTextFile(specifier);
 
   const compiled = await ensureCachedFile(
