@@ -56,7 +56,9 @@ jobs:
           title: "Tests failed"
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
   status:
-    needs: [lint, test, depsbot]
+    needs:
+      - lint
+      - test
     runs-on: ubuntu-latest
     steps:
       - uses: sarisia/actions-status-discord@v1
