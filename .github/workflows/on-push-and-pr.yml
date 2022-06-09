@@ -1,9 +1,12 @@
 name: On Push & PR
 on:
   push:
-    branches-ignore: [master, main]
+    branches:
+      - "*"
   pull_request:
-    branches: [master, main]
+    branches:
+      - master
+      - main
 jobs:
   lint:
     name: Lint

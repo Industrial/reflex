@@ -1,7 +1,7 @@
 import { Middleware } from 'https://deno.land/x/oak@v10.6.0/mod.ts';
 
 import {
-  compileVendorFiles,
+  compileVendorFile,
   getImportMap,
   resolveImports,
 } from '../importmap.ts';
@@ -23,14 +23,6 @@ export const vendorSourceMiddleware = async ({
   const importMap = await getImportMap(importMapPath);
   const resolvedImports = await resolveImports(importMap);
 
-  const compiledVendorFiles = await compileVendorFiles({
-    appSourcePrefix,
-    cacheDirectoryPath,
-    importMap,
-    resolvedImports,
-    vendorSourcePrefix,
-  });
-
   const middleware: Middleware = async (ctx, next) => {
     if (!ctx.request.url.pathname.startsWith(vendorSourcePrefix)) {
       await next();
@@ -47,13 +39,17 @@ export const vendorSourceMiddleware = async ({
       vendorSourcePrefix,
     );
 
-    let transpileFileResult;
-    if (importMapURL) {
-      transpileFileResult = compiledVendorFiles[importMapURL];
-    }
-    if (!transpileFileResult) {
-      transpileFileResult = compiledVendorFiles[externalURL];
-    }
+    const importURL = importMapURL || externalURL;
+    const resolvedImport = resolvedImports[importURL] || importURL;
+
+    const transpileFileResult = await compileVendorFile({
+      specifier: importURL,
+      local: resolvedImport,
+      appSourcePrefix,
+      cacheDirectoryPath,
+      vendorSourcePrefix,
+    });
+
     if (!transpileFileResult) {
       await next();
       return;

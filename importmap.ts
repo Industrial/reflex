@@ -65,10 +65,75 @@ export const resolveImports = async (
   return resolvedImports;
 };
 
+export const ensureCachedFile = async (
+  cacheFilePath: string,
+  source: string,
+  compile: (hash: string, hashPath: string) => Promise<string>,
+) => {
+  const hash = hashSource(source);
+  const hashPath = `${cacheFilePath}/${hash}`;
+  try {
+    const cached = await Deno.readTextFile(hashPath);
+    return cached;
+  } catch (_error: unknown) {
+    const compiled = await compile(hash, hashPath);
+    await Deno.writeTextFile(hashPath, compiled);
+    return compiled;
+  }
+};
+
 export type CompileVendorFileProps = {
   appSourcePrefix: string;
   cacheDirectoryPath: string;
-  importMap: ImportMap;
+  local: string;
+  specifier: string;
+  vendorSourcePrefix: string;
+};
+
+export const compileVendorFile = async ({
+  appSourcePrefix,
+  cacheDirectoryPath,
+  local,
+  specifier,
+  vendorSourcePrefix,
+}: CompileVendorFileProps) => {
+  let source: string;
+  try {
+    source = await fetchSourceFromPath(local || specifier);
+  } catch (error: unknown) {
+    if ((error as Error).message.includes('Is a directory')) {
+      return local;
+    }
+    throw error;
+  }
+
+  return await ensureCachedFile(
+    `${cacheDirectoryPath}${vendorSourcePrefix}`,
+    source,
+    async () => {
+      try {
+        const compiled = await compileSource(
+          source,
+          new ImportVisitor({
+            specifier,
+            appSourcePrefix,
+            vendorSourcePrefix,
+            parsedImports: importMap.imports,
+            resolvedImports,
+          }),
+        );
+        return compiled;
+      } catch (_error: unknown) {
+        console.error(`Error compiling ${specifier}. Using source.`);
+        return source;
+      }
+    },
+  );
+};
+
+export type CompileVendorFilesProps = {
+  appSourcePrefix: string;
+  cacheDirectoryPath: string;
   resolvedImports: Record<string, string>;
   vendorSourcePrefix: string;
 };
@@ -76,10 +141,9 @@ export type CompileVendorFileProps = {
 export const compileVendorFiles = async ({
   appSourcePrefix,
   cacheDirectoryPath,
-  importMap,
   resolvedImports,
   vendorSourcePrefix,
-}: CompileVendorFileProps): Promise<Record<string, string>> => {
+}: CompileVendorFilesProps): Promise<Record<string, string>> => {
   await ensureCacheDirectory(
     cacheDirectoryPath,
     appSourcePrefix,
@@ -88,45 +152,66 @@ export const compileVendorFiles = async ({
 
   const compiledVendorFiles = await asyncMap<string>(
     async (local, specifier) => {
-      let source: string;
-      try {
-        source = await fetchSourceFromPath(local || specifier);
-      } catch (error: unknown) {
-        if ((error as Error).message.includes('Is a directory')) {
-          return local;
-        }
-        throw error;
-      }
-
-      const hash = hashSource(source);
-      const hashPath = `${cacheDirectoryPath}${vendorSourcePrefix}/${hash}`;
-      try {
-        const cached = await Deno.readTextFile(hashPath);
-        return cached;
-      } catch (_error: unknown) {
-        try {
-          const compiled = await compileSource(
-            source,
-            new ImportVisitor({
-              specifier,
-              appSourcePrefix,
-              vendorSourcePrefix,
-              parsedImports: importMap.imports,
-              resolvedImports,
-            }),
-          );
-          await Deno.writeTextFile(hashPath, compiled);
-          return compiled;
-        } catch (_error: unknown) {
-          console.error(`Error compiling ${specifier}. Using source.`);
-          return source;
-        }
-      }
+      return await compileVendorFile({
+        appSourcePrefix,
+        cacheDirectoryPath,
+        local,
+        specifier,
+        vendorSourcePrefix,
+      });
     },
     resolvedImports,
   );
 
   return compiledVendorFiles;
+};
+
+export type CompileApplicationFileProps = {
+  appSourcePrefix: string;
+  cacheDirectoryPath: string;
+  sourceDirectoryPath: string;
+  importMap: ImportMap;
+  resolvedImports: Record<string, string>;
+  vendorSourcePrefix: string;
+  specifier: string;
+};
+
+export const compileApplicationFile = async ({
+  appSourcePrefix,
+  cacheDirectoryPath,
+  sourceDirectoryPath,
+  importMap,
+  resolvedImports,
+  vendorSourcePrefix,
+  specifier,
+}: CompileApplicationFileProps) => {
+  const source = await Deno.readTextFile(specifier);
+
+  const compiled = await ensureCachedFile(
+    `${cacheDirectoryPath}${appSourcePrefix}`,
+    source,
+    async () => {
+      try {
+        const compiled = await compileSource(
+          source,
+          new ImportVisitor({
+            specifier,
+            sourceDirectoryPath,
+            appSourcePrefix,
+            vendorSourcePrefix,
+            parsedImports: importMap.imports,
+            resolvedImports,
+          }),
+        );
+        return compiled;
+      } catch (_error: unknown) {
+        console.error(`Error compiling ${specifier}. Using source.`);
+        return source;
+      }
+    },
+  );
+
+  return compiled;
 };
 
 export type CompileApplicationFilesProps = {
@@ -168,27 +253,19 @@ export const compileApplicationFiles = async ({
     })
   ) {
     const path = entry.path.replace(`${sourceDirectoryPath}/`, '');
-    const source = await Deno.readTextFile(entry.path);
 
-    const hash = hashSource(source);
-    const hashPath = `${cacheDirectoryPath}${appSourcePrefix}/${hash}`;
-    try {
-      transpileFiles[path] = await Deno.readTextFile(hashPath);
-    } catch (_error: unknown) {
-      const compiled = await compileSource(
-        source,
-        new ImportVisitor({
-          specifier: path,
-          sourceDirectoryPath,
-          appSourcePrefix,
-          vendorSourcePrefix,
-          parsedImports: importMap.imports,
-          resolvedImports,
-        }),
-      );
-      await Deno.writeTextFile(hashPath, compiled);
-      transpileFiles[path] = compiled;
-    }
+    const compiled = await compileApplicationFile({
+      appSourcePrefix,
+      cacheDirectoryPath,
+      sourceDirectoryPath,
+      importMap,
+      resolvedImports,
+      vendorSourcePrefix,
+      specifier: entry.path,
+    });
+
+    transpileFiles[path] = compiled;
   }
+
   return transpileFiles;
 };
