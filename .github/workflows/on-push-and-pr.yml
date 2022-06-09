@@ -24,20 +24,21 @@ jobs:
         with:
           title: "Linting failed"
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
-  depsbot:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@master
-      - name: Run depsbot
-        uses: denosaurs/depsbot@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: sarisia/actions-status-discord@v1
-        if: failure()
-        with:
-          title: "Depsbot failed"
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+  # Broken: https://github.com/denosaurs/depsbot/issues/193
+  # depsbot:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@master
+  #     - name: Run depsbot
+  #       uses: denosaurs/depsbot@master
+  #       with:
+  #         github_token: ${{ secrets.GITHUB_TOKEN }}
+  #     - uses: sarisia/actions-status-discord@v1
+  #       if: failure()
+  #       with:
+  #         title: "Depsbot failed"
+  #         webhook: ${{ secrets.DISCORD_WEBHOOK }}
   test:
     runs-on: ubuntu-latest
     steps:
