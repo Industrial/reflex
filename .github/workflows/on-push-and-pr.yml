@@ -22,6 +22,7 @@ jobs:
       - uses: sarisia/actions-status-discord@v1
         if: failure()
         with:
+          title: "Linting failed"
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
   depsbot:
     runs-on: ubuntu-latest
@@ -35,6 +36,7 @@ jobs:
       - uses: sarisia/actions-status-discord@v1
         if: failure()
         with:
+          title: "Depsbot failed"
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
   test:
     runs-on: ubuntu-latest
@@ -47,6 +49,7 @@ jobs:
       - uses: sarisia/actions-status-discord@v1
         if: failure()
         with:
+          title: "Tests failed"
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
   status:
     needs: [lint, test, depsbot]
@@ -55,4 +58,5 @@ jobs:
       - uses: sarisia/actions-status-discord@v1
         if: success()
         with:
+          title: "All good"
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
