@@ -84,7 +84,7 @@ export const resolveImports = async ({
   return resolvedImports;
 };
 
-export type compileFileProps = {
+export type CompileFileProps = {
   appSourcePrefix: string;
   cacheDirectoryPath: string;
   cacheMethod: CacheMethod;
@@ -102,7 +102,7 @@ export const compileFile = async ({
   resolvedImports,
   specifier,
   vendorSourcePrefix,
-}: compileFileProps): Promise<string> => {
+}: CompileFileProps): Promise<string> => {
   // console.log('compileFile:local', local);
   // console.log('compileFile:specifier', specifier);
   // console.log('compileFile:cacheMethod', cacheMethod);
@@ -152,7 +152,7 @@ export const compileFile = async ({
   }
 };
 
-export type compileFilesProps = {
+export type CompileFilesProps = {
   appSourcePrefix: string;
   cacheDirectoryPath: string;
   cacheMethod: CacheMethod;
@@ -166,7 +166,7 @@ export const compileFiles = async ({
   cacheMethod,
   resolvedImports,
   vendorSourcePrefix,
-}: compileFilesProps): Promise<Record<string, string>> => {
+}: CompileFilesProps): Promise<Record<string, string>> => {
   const compiledVendorFiles = await asyncMap<string>(
     async (local, specifier) => {
       return await compileFile({
