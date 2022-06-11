@@ -1,3 +1,4 @@
+export { createElement } from 'https://esm.sh/react@18.1.0';
 export * as React from 'https://esm.sh/react@18.1.0';
 export type {
   CallExpression,
