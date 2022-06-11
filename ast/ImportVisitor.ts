@@ -1,11 +1,10 @@
 import type {
-  CallExpression,
   ExportAllDeclaration,
   ExportNamedDeclaration,
   ImportDeclaration,
   StringLiteral,
 } from '../deps.ts';
-import { dirname, normalize, resolve, Visitor } from '../deps.ts';
+import { dirname, resolve, Visitor } from '../deps.ts';
 
 export type ImportVisitorProps = {
   specifier: string;
@@ -53,29 +52,26 @@ export class ImportVisitor extends Visitor {
 
     // Local import.
     if (node.value.startsWith('.')) {
-      if (this.sourceDirectoryPath) {
-        const specifierPath = resolve(this.sourceDirectoryPath, this.specifier);
-        const specifierDirectoryPath = dirname(specifierPath);
-        const normalized = resolve(specifierDirectoryPath, node.value);
-
-        if (!normalized.startsWith(this.sourceDirectoryPath)) {
-          throw new Error(
-            `Local import must be in app source. ('${node.value}' in '${specifierPath}')`,
-          );
-        }
-
-        const withoutBasePath = normalized.replace(
-          this.sourceDirectoryPath,
-          '',
-        );
-
-        node.value = `${this.appSourcePrefix}${withoutBasePath}`;
-        return node;
+      if (!this.sourceDirectoryPath) {
+        throw new Error(`No sourceDirectoryPath defined`);
       }
 
-      const { hostname, pathname } = new URL(this.specifier);
-      const newpathname = normalize(`${dirname(pathname)}/${node.value}`);
-      node.value = `${this.vendorSourcePrefix}/${hostname}${newpathname}`;
+      const specifierPath = resolve(this.sourceDirectoryPath, this.specifier);
+      const specifierDirectoryPath = dirname(specifierPath);
+      const normalized = resolve(specifierDirectoryPath, node.value);
+
+      if (!normalized.startsWith(this.sourceDirectoryPath)) {
+        throw new Error(
+          `Local import must be in app source. ('${node.value}' in '${specifierPath}')`,
+        );
+      }
+
+      const withoutBasePath = normalized.replace(
+        this.sourceDirectoryPath,
+        '',
+      );
+
+      node.value = `${this.appSourcePrefix}${withoutBasePath}`;
       return node;
     }
 
@@ -115,20 +111,5 @@ export class ImportVisitor extends Visitor {
       node.source = this.replaceStringLiteral(node.source);
     }
     return super.visitExportAllDeclaration(node);
-  }
-
-  public override visitCallExpression(node: CallExpression) {
-    if (node.callee.type === 'Import') {
-      node.arguments = node.arguments.map((argument) => {
-        if (argument.expression.type === 'StringLiteral') {
-          argument.expression = this.replaceStringLiteral(
-            argument.expression,
-          );
-        }
-
-        return argument;
-      });
-    }
-    return super.visitCallExpression(node);
   }
 }
