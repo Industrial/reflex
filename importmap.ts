@@ -7,6 +7,7 @@ import { ImportVisitor } from './ast/ImportVisitor.ts';
 import { asyncMap } from './object.ts';
 import { compileSource } from './compile.ts';
 import { fetchSourceFromPath, isPathAnURL } from './path.ts';
+import { hashSource } from './hash.ts';
 
 export type ImportMap = {
   imports: Record<string, string>;
@@ -110,7 +111,12 @@ export const compileVendorFile = async ({
     throw error;
   }
 
-  const cached = await get(specifier, cacheMethod, cacheDirectoryPath);
+  let cacheKey: string = specifier;
+  if (cacheMethod === 'disk') {
+    cacheKey = hashSource(source);
+  }
+
+  const cached = await get(cacheKey, cacheMethod, cacheDirectoryPath);
   if (cached) {
     return cached;
   }
@@ -127,7 +133,7 @@ export const compileVendorFile = async ({
       }),
     );
 
-    await set(specifier, compiled, cacheMethod, cacheDirectoryPath);
+    await set(cacheKey, compiled, cacheMethod, cacheDirectoryPath);
 
     return compiled;
   } catch (_error: unknown) {
@@ -192,7 +198,12 @@ export const compileApplicationFile = async ({
 }: CompileApplicationFileProps) => {
   const source = await Deno.readTextFile(specifier);
 
-  const cached = await get(specifier, cacheMethod, cacheDirectoryPath);
+  let cacheKey: string = specifier;
+  if (cacheMethod === 'disk') {
+    cacheKey = hashSource(source);
+  }
+
+  const cached = await get(cacheKey, cacheMethod, cacheDirectoryPath);
   if (cached) {
     return cached;
   }
@@ -210,7 +221,7 @@ export const compileApplicationFile = async ({
       }),
     );
 
-    await set(specifier, compiled, cacheMethod, cacheDirectoryPath);
+    await set(cacheKey, compiled, cacheMethod, cacheDirectoryPath);
 
     return compiled;
   } catch (_error: unknown) {

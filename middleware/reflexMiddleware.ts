@@ -23,7 +23,7 @@ export const reflexMiddleware = async ({
   Document,
   appSourcePrefix = '/.x',
   cacheMethod = 'memory',
-  cacheDirectoryPath = './.cache',
+  cacheDirectoryPath = '.cache',
   importMapPath = resolveLocalPath('./importMap.json'),
   modifyStream,
   sourceDirectoryPath = resolveLocalPath('./app'),

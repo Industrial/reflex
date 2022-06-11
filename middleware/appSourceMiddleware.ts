@@ -5,6 +5,7 @@ import {
   getImportMap,
   resolveImports,
 } from '../importmap.ts';
+import { resolveLocalPath } from '../path.ts';
 
 export type AppSourceProps = {
   appSourcePrefix: string;
@@ -16,12 +17,12 @@ export type AppSourceProps = {
 };
 
 export const appSourceMiddleware = async ({
-  appSourcePrefix,
-  cacheDirectoryPath,
-  cacheMethod,
-  importMapPath,
-  sourceDirectoryPath,
-  vendorSourcePrefix,
+  appSourcePrefix = '/.x',
+  cacheMethod = 'memory',
+  cacheDirectoryPath = '.cache',
+  importMapPath = resolveLocalPath('./importMap.json'),
+  sourceDirectoryPath = resolveLocalPath('./app'),
+  vendorSourcePrefix = '/.v',
 }: AppSourceProps) => {
   const importMap = await getImportMap(importMapPath);
   const resolvedImports = await resolveImports({
