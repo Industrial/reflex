@@ -21,7 +21,7 @@ Reflex apps are fast and performant. Check out the [Lighthouse Score](https://pa
 
 ## Support
 
-Create an [Issue](https://github.com/Industrial/reflex/issues) or come hang out on [Discord](https://discord.gg/CvPVVeVk)!
+Create an [Issue](https://github.com/Industrial/reflex/issues) or come hang out on [Discord](https://discord.gg/CvPVVeVk).
 
 ## Quick Start
 
@@ -143,7 +143,7 @@ Create a file called `importMap.json` in the root of your project.
 }
 ```
 
-### Run!
+### Run
 
 Now run the server
 
