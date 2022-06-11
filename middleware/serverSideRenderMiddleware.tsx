@@ -1,6 +1,4 @@
-import React from 'https://esm.sh/react@18.1.0';
-import { renderToReadableStream } from 'https://esm.sh/react-dom@18.1.0/server?dev';
-import { Middleware } from 'https://deno.land/x/oak@v10.6.0/mod.ts';
+import { Middleware, React, renderToReadableStream } from '../deps.ts';
 import { DocumentElement } from '../types.ts';
 
 export type ModifyStreamFunction = (

@@ -1,7 +1,6 @@
-import { Middleware } from 'https://deno.land/x/oak@v10.6.0/mod.ts';
-
 import { CacheMethod } from '../cache.ts';
 import { DocumentElement } from '../types.ts';
+import { Middleware } from '../deps.ts';
 import { appSourceMiddleware } from './appSourceMiddleware.ts';
 import { resolveLocalPath } from '../path.ts';
 import { serverSideRenderMiddleware } from './serverSideRenderMiddleware.tsx';

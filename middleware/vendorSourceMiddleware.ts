@@ -1,6 +1,5 @@
-import { Middleware } from 'https://deno.land/x/oak@v10.6.0/mod.ts';
 import { CacheMethod } from '../cache.ts';
-
+import { Middleware } from '../deps.ts';
 import {
   compileVendorFile,
   getImportMap,

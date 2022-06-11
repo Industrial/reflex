@@ -1,11 +1,8 @@
-import { createGraph } from 'https://deno.land/x/deno_graph@0.27.0/mod.ts';
-import { resolve } from 'https://deno.land/std@0.140.0/path/mod.ts';
-import { walk } from 'https://deno.land/std@0.140.0/fs/mod.ts';
-
 import { CacheMethod, get, set } from './cache.ts';
 import { ImportVisitor } from './ast/ImportVisitor.ts';
 import { asyncMap } from './object.ts';
 import { compileSource } from './compile.ts';
+import { createGraph, resolve, walk } from './deps.ts';
 import { fetchSourceFromPath, isPathAnURL } from './path.ts';
 import { hashSource } from './hash.ts';
 

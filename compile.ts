@@ -1,10 +1,10 @@
 import {
-  default as wasmWeb,
   parseSync,
   printSync,
   transformSync,
-} from 'https://esm.sh/@swc/wasm-web@1.2.189/wasm-web.js';
-import { Visitor } from 'https://esm.sh/@swc/core@1.2.171/Visitor.js';
+  Visitor,
+  wasmWeb,
+} from './deps.ts';
 
 await wasmWeb('https://cdn.esm.sh/@swc/wasm-web@1.2.189/wasm-web_bg.wasm');
 

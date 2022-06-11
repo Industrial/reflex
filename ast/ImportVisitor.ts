@@ -4,13 +4,8 @@ import type {
   ExportNamedDeclaration,
   ImportDeclaration,
   StringLiteral,
-} from 'https://esm.sh/@swc/core@1.2.171/types.d.ts';
-import { Visitor } from 'https://esm.sh/@swc/core@1.2.171/Visitor.js';
-import {
-  dirname,
-  normalize,
-  resolve,
-} from 'https://deno.land/std@0.140.0/path/mod.ts';
+} from '../deps.ts';
+import { dirname, normalize, resolve, Visitor } from '../deps.ts';
 
 export type ImportVisitorProps = {
   specifier: string;
