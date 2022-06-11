@@ -1,10 +1,6 @@
 import { CacheMethod } from '../cache.ts';
 import { Middleware } from '../deps.ts';
-import {
-  compileApplicationFile,
-  getImportMap,
-  resolveImports,
-} from '../importmap.ts';
+import { compileFile, getImportMap, resolveImports } from '../importmap.ts';
 import { resolveLocalPath } from '../path.ts';
 
 export type AppSourceProps = {
@@ -49,7 +45,7 @@ export const appSourceMiddleware = async ({
 
     const path = ctx.request.url.pathname.replace(`${appSourcePrefix}/`, '');
 
-    const transpileFileResult = await compileApplicationFile({
+    const transpileFileResult = await compileFile({
       vendorSourcePrefix,
       cacheDirectoryPath,
       cacheMethod,

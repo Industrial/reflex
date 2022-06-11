@@ -1,10 +1,6 @@
 import { CacheMethod } from '../cache.ts';
 import { Middleware } from '../deps.ts';
-import {
-  compileVendorFile,
-  getImportMap,
-  resolveImports,
-} from '../importmap.ts';
+import { compileFile, getImportMap, resolveImports } from '../importmap.ts';
 import { internalToExternalURL, resolveLocalPath } from '../path.ts';
 
 export type VendorSourceMiddlewareProps = {
@@ -57,7 +53,7 @@ export const vendorSourceMiddleware = async ({
     const importURL = importMapURL || externalURL;
     const resolvedImport = resolvedImports[importURL] || importURL;
 
-    const transpileFileResult = await compileVendorFile({
+    const transpileFileResult = await compileFile({
       appSourcePrefix,
       cacheDirectoryPath,
       cacheMethod,

@@ -2,7 +2,7 @@ import { CacheMethod, get, set } from './cache.ts';
 import { ImportVisitor } from './ast/ImportVisitor.ts';
 import { asyncMap } from './object.ts';
 import { compileSource } from './compile.ts';
-import { createGraph, resolve, walk } from './deps.ts';
+import { createGraph, resolve } from './deps.ts';
 import { fetchSourceFromPath, isPathAnURL } from './path.ts';
 import { hashSource } from './hash.ts';
 
@@ -84,7 +84,7 @@ export const resolveImports = async ({
   return resolvedImports;
 };
 
-export type CompileVendorFileProps = {
+export type compileFileProps = {
   appSourcePrefix: string;
   cacheDirectoryPath: string;
   cacheMethod: CacheMethod;
@@ -94,7 +94,7 @@ export type CompileVendorFileProps = {
   vendorSourcePrefix: string;
 };
 
-export const compileVendorFile = async ({
+export const compileFile = async ({
   appSourcePrefix,
   cacheDirectoryPath,
   cacheMethod,
@@ -102,7 +102,15 @@ export const compileVendorFile = async ({
   resolvedImports,
   specifier,
   vendorSourcePrefix,
-}: CompileVendorFileProps): Promise<string> => {
+}: compileFileProps): Promise<string> => {
+  // console.log('compileFile:local', local);
+  // console.log('compileFile:specifier', specifier);
+  // console.log('compileFile:cacheMethod', cacheMethod);
+  // console.log('compileFile:cacheDirectoryPath', cacheDirectoryPath);
+  // // console.log('compileFile:resolvedImports', resolvedImports);
+  // console.log('compileFile:appSourcePrefix', appSourcePrefix);
+  // console.log('compileFile:vendorSourcePrefix', vendorSourcePrefix);
+
   let source: string;
   try {
     source = await fetchSourceFromPath(local || specifier);
@@ -144,7 +152,7 @@ export const compileVendorFile = async ({
   }
 };
 
-export type CompileVendorFilesProps = {
+export type compileFilesProps = {
   appSourcePrefix: string;
   cacheDirectoryPath: string;
   cacheMethod: CacheMethod;
@@ -152,16 +160,16 @@ export type CompileVendorFilesProps = {
   vendorSourcePrefix: string;
 };
 
-export const compileVendorFiles = async ({
+export const compileFiles = async ({
   appSourcePrefix,
   cacheDirectoryPath,
   cacheMethod,
   resolvedImports,
   vendorSourcePrefix,
-}: CompileVendorFilesProps): Promise<Record<string, string>> => {
+}: compileFilesProps): Promise<Record<string, string>> => {
   const compiledVendorFiles = await asyncMap<string>(
     async (local, specifier) => {
-      return await compileVendorFile({
+      return await compileFile({
         appSourcePrefix,
         cacheDirectoryPath,
         cacheMethod,
@@ -175,112 +183,4 @@ export const compileVendorFiles = async ({
   );
 
   return compiledVendorFiles;
-};
-
-export type CompileApplicationFileProps = {
-  appSourcePrefix: string;
-  cacheDirectoryPath: string;
-  cacheMethod: CacheMethod;
-  sourceDirectoryPath: string;
-  importMap: ImportMap;
-  resolvedImports: Record<string, string>;
-  vendorSourcePrefix: string;
-  specifier: string;
-};
-
-export const compileApplicationFile = async ({
-  appSourcePrefix,
-  cacheDirectoryPath,
-  cacheMethod,
-  sourceDirectoryPath,
-  importMap,
-  resolvedImports,
-  vendorSourcePrefix,
-  specifier,
-}: CompileApplicationFileProps) => {
-  const source = await Deno.readTextFile(specifier);
-
-  let cacheKey: string = specifier;
-  if (cacheMethod === 'disk') {
-    cacheKey = hashSource(source);
-  }
-
-  const cached = await get(cacheKey, cacheMethod, cacheDirectoryPath);
-  if (cached) {
-    return cached;
-  }
-
-  try {
-    const compiled = await compileSource(
-      source,
-      new ImportVisitor({
-        specifier,
-        sourceDirectoryPath,
-        appSourcePrefix,
-        vendorSourcePrefix,
-        parsedImports: importMap.imports,
-        resolvedImports,
-      }),
-    );
-
-    await set(cacheKey, compiled, cacheMethod, cacheDirectoryPath);
-
-    return compiled;
-  } catch (_error: unknown) {
-    console.error(`Error compiling ${specifier}. Using source.`);
-    return source;
-  }
-};
-
-export type CompileApplicationFilesProps = {
-  appSourcePrefix: string;
-  cacheDirectoryPath: string;
-  cacheMethod: CacheMethod;
-  sourceDirectoryPath: string;
-  importMap: ImportMap;
-  resolvedImports: Record<string, string>;
-  vendorSourcePrefix: string;
-};
-
-export const compileApplicationFiles = async ({
-  appSourcePrefix,
-  cacheDirectoryPath,
-  cacheMethod,
-  sourceDirectoryPath,
-  importMap,
-  resolvedImports,
-  vendorSourcePrefix,
-}: CompileApplicationFilesProps): Promise<
-  Record<string, string>
-> => {
-  const transpileFiles: Record<string, string> = {};
-  for await (
-    const entry of walk(sourceDirectoryPath, {
-      includeDirs: false,
-      followSymlinks: true,
-      exts: [
-        '.ts',
-        '.tsx',
-        '.js',
-        '.jsx',
-      ],
-    })
-  ) {
-    const path = entry.path.replace(`${sourceDirectoryPath}/`, '');
-
-    const compiled = await compileApplicationFile({
-      appSourcePrefix,
-      cacheDirectoryPath,
-      cacheMethod,
-      sourceDirectoryPath,
-      importMap,
-      resolvedImports,
-      vendorSourcePrefix,
-      specifier: entry.path,
-    });
-
-    transpileFiles[path] = compiled;
-  }
-
-  return transpileFiles;
 };
