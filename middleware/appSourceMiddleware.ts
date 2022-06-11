@@ -59,6 +59,7 @@ export const appSourceMiddleware = async ({
     }
 
     ctx.response.headers.set('Content-Type', 'text/javascript;charset=UTF-8');
+    ctx.response.headers.set('Cache-Control', 'max-age=31536000');
     ctx.response.body = transpileFileResult;
   };
 

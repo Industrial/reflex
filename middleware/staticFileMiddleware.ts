@@ -7,6 +7,7 @@ export const staticFileMiddleware = () => {
         root: `${Deno.cwd()}/public`,
       });
       if (path) {
+        ctx.response.headers.append('Cache-Control', 'max-age=31536000');
         return;
       }
       await next();
