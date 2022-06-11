@@ -1,9 +1,5 @@
-import {
-  createElement as h,
-  Middleware,
-  React,
-  renderToReadableStream,
-} from '../deps.ts';
+/** @jsx React.createElement */
+import { Middleware, React, renderToReadableStream } from '../deps.ts';
 import { DocumentElement } from '../types.ts';
 
 export type ModifyStreamFunction = (
