@@ -1,4 +1,5 @@
 import { Middleware } from 'https://deno.land/x/oak@v10.6.0/middleware.ts';
+import { CacheMethod } from '../cache.ts';
 import {
   compileApplicationFile,
   getImportMap,
@@ -8,27 +9,27 @@ import {
 export type AppSourceProps = {
   appSourcePrefix: string;
   cacheDirectoryPath: string;
+  cacheMethod: CacheMethod;
   importMapPath: string;
   sourceDirectoryPath: string;
-  useDenoCache?: boolean;
   vendorSourcePrefix: string;
 };
 
 export const appSourceMiddleware = async ({
   appSourcePrefix,
   cacheDirectoryPath,
+  cacheMethod,
   importMapPath,
   sourceDirectoryPath,
-  useDenoCache = false,
   vendorSourcePrefix,
 }: AppSourceProps) => {
   const importMap = await getImportMap(importMapPath);
   const resolvedImports = await resolveImports({
     appSourcePrefix,
     cacheDirectoryPath,
+    cacheMethod,
     importMap,
     importMapPath,
-    useDenoCache,
     vendorSourcePrefix,
   });
 
@@ -43,6 +44,7 @@ export const appSourceMiddleware = async ({
     const transpileFileResult = await compileApplicationFile({
       vendorSourcePrefix,
       cacheDirectoryPath,
+      cacheMethod,
       importMap,
       sourceDirectoryPath,
       resolvedImports,

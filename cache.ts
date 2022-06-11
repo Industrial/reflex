@@ -1,32 +1,55 @@
-import { hashSource } from './hash.ts';
+export type CacheMethod = 'memory' | 'disk';
 
-export async function ensureCacheDirectory(
-  cacheDirectoryPath: string,
-  appSourcePrefix: string,
-  vendorSourcePrefix: string,
-): Promise<void> {
-  await Deno.mkdir(cacheDirectoryPath, { recursive: true });
-  await Deno.mkdir(`${cacheDirectoryPath}${appSourcePrefix}`, {
-    recursive: true,
-  });
-  await Deno.mkdir(`${cacheDirectoryPath}${vendorSourcePrefix}`, {
-    recursive: true,
-  });
-}
+export const ensureDirectory = async (path: string) => {
+  await Deno.mkdir(path, { recursive: true });
+};
 
-export const ensureCachedFile = async (
-  cacheFilePath: string,
-  source: string,
-  compile: (hash: string, hashPath: string) => Promise<string>,
-) => {
-  const hash = hashSource(source);
-  const hashPath = `${cacheFilePath}/${hash}`;
-  try {
-    const cached = await Deno.readTextFile(hashPath);
-    return cached;
-  } catch (_error: unknown) {
-    const compiled = await compile(hash, hashPath);
-    await Deno.writeTextFile(hashPath, compiled);
-    return compiled;
+const memoryCache = new Map<string, string>();
+
+export const get = async (
+  key: string,
+  method: CacheMethod = 'memory',
+  directory = '.cache',
+): Promise<string | undefined> => {
+  if (method === 'memory') {
+    return memoryCache.get(key);
+  }
+
+  if (method === 'disk') {
+    await ensureDirectory(directory);
+
+    const path = `${directory}/${key}`;
+
+    try {
+      const cached = await Deno.readTextFile(path);
+      return cached;
+    } catch (_error: unknown) {
+      return undefined;
+    }
+  }
+
+  return undefined;
+};
+
+export const set = async (
+  key: string,
+  value: string,
+  method: CacheMethod = 'memory',
+  directory = '.cache',
+): Promise<void> => {
+  if (method === 'memory') {
+    memoryCache.set(key, value);
+  }
+
+  if (method === 'disk') {
+    await ensureDirectory(directory);
+
+    const path = `${directory}/${key}`;
+
+    try {
+      await Deno.writeTextFile(path, value);
+    } catch (_error: unknown) {
+      return undefined;
+    }
   }
 };
