@@ -1,16 +1,16 @@
+# Reflex
+
 [![Build](https://img.shields.io/github/workflow/status/Industrial/reflex/On%20Push%20&%20PR)](https://github.com/Industrial/reflex/actions/workflows/on-push-and-pr.yml)
 [![Issues](https://img.shields.io/github/issues/Industrial/reflex)](https://github.com/Industrial/reflex/issues)
 [![License](https://img.shields.io/github/license/Industrial/reflex)](https://github.com/Industrial/reflex/blob/main/LICENSE)
 [![Commit Activity](https://img.shields.io/github/commit-activity/m/Industrial/reflex)](https://github.com/Industrial/reflex/commits/main)
 [![Discord](https://img.shields.io/discord/365982843970650113)](https://discord.gg/F3E35cx)
 
-# Reflex
-
 A [React](https://reactjs.org) framework for [Deno](https://deno.land) and [Oak](https://deno.land/x/oak).
 
 ## Features
 
-- React 18's Streaming Server Side Rendering.
+- React 18's Streaming server-side Rendering.
 - No bundlers like webpack needed. Use modern ~~Java~~TypeScript.
 - Serves all vendor files locally, ensuring that your users get what you expect and you don't need an external CDN.
 - Caching out of the box using the Deno cache.
