@@ -14,6 +14,7 @@ export type ReflexMiddlewareProps = {
   importMapPath?: string;
   modifyStream?: (applicationStream: ReadableStream) => ReadableStream;
   sourceDirectoryPath?: string;
+  useDenoCache?: boolean;
   vendorSourcePrefix?: string;
 };
 
@@ -24,6 +25,7 @@ export const reflexMiddleware = async ({
   importMapPath = resolveLocalPath('./importMap.json'),
   modifyStream,
   sourceDirectoryPath = resolveLocalPath('./app'),
+  useDenoCache = false,
   vendorSourcePrefix = '/.v',
 }: ReflexMiddlewareProps) => {
   const startTime = Date.now();
@@ -33,6 +35,7 @@ export const reflexMiddleware = async ({
     cacheDirectoryPath,
     importMapPath,
     sourceDirectoryPath,
+    useDenoCache,
     vendorSourcePrefix,
   });
 
@@ -48,6 +51,7 @@ export const reflexMiddleware = async ({
     appSourcePrefix,
     cacheDirectoryPath,
     importMapPath,
+    useDenoCache,
     vendorSourcePrefix,
   });
 

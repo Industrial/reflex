@@ -11,6 +11,7 @@ export type VendorSourceMiddlewareProps = {
   appSourcePrefix: string;
   cacheDirectoryPath: string;
   importMapPath: string;
+  useDenoCache?: boolean;
   vendorSourcePrefix: string;
 };
 
@@ -18,13 +19,17 @@ export const vendorSourceMiddleware = async ({
   appSourcePrefix,
   cacheDirectoryPath,
   importMapPath,
+  useDenoCache = false,
   vendorSourcePrefix,
 }: VendorSourceMiddlewareProps) => {
   const importMap = await getImportMap(importMapPath);
   const resolvedImports = await resolveImports({
+    appSourcePrefix,
     cacheDirectoryPath,
     importMap,
     importMapPath,
+    useDenoCache,
+    vendorSourcePrefix,
   });
 
   const middleware: Middleware = async (ctx, next) => {

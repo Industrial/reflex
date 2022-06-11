@@ -1,5 +1,12 @@
-import { createCache } from 'https://deno.land/x/deno_cache@0.4.1/mod.ts';
-import { createGraph } from 'https://deno.land/x/deno_graph@0.27.0/mod.ts';
+import {
+  Cacher,
+  createCache,
+  Loader,
+} from 'https://deno.land/x/deno_cache@0.4.1/mod.ts';
+import {
+  createGraph,
+  ModuleGraph,
+} from 'https://deno.land/x/deno_graph@0.27.0/mod.ts';
 import { resolve } from 'https://deno.land/std@0.140.0/path/mod.ts';
 import { walk } from 'https://deno.land/std@0.140.0/fs/mod.ts';
 
@@ -8,8 +15,6 @@ import { asyncMap } from './object.ts';
 import { compileSource } from './compile.ts';
 import { ensureCachedFile, ensureCacheDirectory } from './cache.ts';
 import { fetchSourceFromPath, isPathAnURL } from './path.ts';
-
-const cache = createCache();
 
 export type ImportMap = {
   imports: Record<string, string>;
@@ -27,17 +32,34 @@ export const getImportMap = async (path: string): Promise<ImportMap> => {
 };
 
 export type ResolveImportsProps = {
+  appSourcePrefix: string;
   cacheDirectoryPath: string;
   importMap: ImportMap;
   importMapPath: string;
+  useDenoCache: boolean;
+  vendorSourcePrefix: string;
 };
 
 export const resolveImports = async ({
+  appSourcePrefix,
   cacheDirectoryPath,
   importMap,
   importMapPath,
+  useDenoCache = false,
+  vendorSourcePrefix,
 }: ResolveImportsProps): Promise<Record<string, string>> => {
+  let cache: Loader & Cacher;
+  if (useDenoCache) {
+    cache = createCache();
+  }
+
   const source = await Deno.readTextFile(importMapPath);
+
+  await ensureCacheDirectory(
+    cacheDirectoryPath,
+    appSourcePrefix,
+    vendorSourcePrefix,
+  );
 
   const compiled = await ensureCachedFile(
     cacheDirectoryPath,
@@ -56,11 +78,18 @@ export const resolveImports = async ({
           resolvedPath = `file://${resolvedPath}`;
         }
 
-        const graph = await createGraph(resolvedPath.toString(), {
-          kind: 'codeOnly',
-          cacheInfo: cache.cacheInfo,
-          load: cache.load,
-        });
+        let graph: ModuleGraph;
+        if (useDenoCache) {
+          graph = await createGraph(resolvedPath.toString(), {
+            kind: 'codeOnly',
+            cacheInfo: cache.cacheInfo,
+            load: cache.load,
+          });
+        } else {
+          graph = await createGraph(resolvedPath.toString(), {
+            kind: 'codeOnly',
+          });
+        }
 
         const { modules } = graph.toJSON();
 

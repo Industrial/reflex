@@ -10,6 +10,7 @@ export type AppSourceProps = {
   cacheDirectoryPath: string;
   importMapPath: string;
   sourceDirectoryPath: string;
+  useDenoCache?: boolean;
   vendorSourcePrefix: string;
 };
 
@@ -18,13 +19,17 @@ export const appSourceMiddleware = async ({
   cacheDirectoryPath,
   importMapPath,
   sourceDirectoryPath,
+  useDenoCache = false,
   vendorSourcePrefix,
 }: AppSourceProps) => {
   const importMap = await getImportMap(importMapPath);
   const resolvedImports = await resolveImports({
+    appSourcePrefix,
     cacheDirectoryPath,
     importMap,
     importMapPath,
+    useDenoCache,
+    vendorSourcePrefix,
   });
 
   const middleware: Middleware = async (ctx, next) => {
