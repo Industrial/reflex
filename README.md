@@ -1,5 +1,8 @@
-[![Open Issues](https://img.shields.io/github/Industrial/reflex/status)](https://github.com/Industrial/reflex)
-[![GitHub Super-Linter](https://github.com/Industrial/reflex/workflows/Lint%20Code%20Base/badge.svg)](https://github.com/marketplace/actions/super-linter)
+[![Build](https://img.shields.io/github/workflow/status/Industrial/reflex/On%20Push%20&%20PR)](https://github.com/Industrial/reflex/actions/workflows/on-push-and-pr.yml)
+[![Issues](https://img.shields.io/github/issues/Industrial/reflex)](https://github.com/Industrial/reflex/issues)
+[![License](https://img.shields.io/github/license/Industrial/reflex)](https://github.com/Industrial/reflex/blob/master/LICENSE)
+[![Commit Activity](https://img.shields.io/github/commit-activity/m/Industrial/reflex)](https://github.com/Industrial/reflex/commits)
+[![Discord](https://img.shields.io/discord/365982843970650113)](https://discord.gg/CvPVVeVk)
 
 # Reflex
 
