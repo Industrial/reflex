@@ -6,6 +6,7 @@ export const ensureDirectory = async (path: string) => {
 
 const memoryCache = new Map<string, string>();
 
+// TODO: put file hashing back.
 export const get = async (
   key: string,
   method: CacheMethod = 'memory',

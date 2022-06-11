@@ -110,9 +110,7 @@ export const compileVendorFile = async ({
     throw error;
   }
 
-  const cacheKey = `${cacheDirectoryPath}${vendorSourcePrefix}`;
-
-  const cached = await get(cacheKey, cacheMethod, cacheDirectoryPath);
+  const cached = await get(specifier, cacheMethod, cacheDirectoryPath);
   if (cached) {
     return cached;
   }
@@ -129,7 +127,7 @@ export const compileVendorFile = async ({
       }),
     );
 
-    await set(cacheKey, compiled, cacheMethod, cacheDirectoryPath);
+    await set(specifier, compiled, cacheMethod, cacheDirectoryPath);
 
     return compiled;
   } catch (_error: unknown) {
@@ -194,9 +192,7 @@ export const compileApplicationFile = async ({
 }: CompileApplicationFileProps) => {
   const source = await Deno.readTextFile(specifier);
 
-  const cacheKey = `${cacheDirectoryPath}${vendorSourcePrefix}`;
-
-  const cached = await get(cacheKey, cacheMethod, cacheDirectoryPath);
+  const cached = await get(specifier, cacheMethod, cacheDirectoryPath);
   if (cached) {
     return cached;
   }
@@ -214,7 +210,7 @@ export const compileApplicationFile = async ({
       }),
     );
 
-    await set(cacheKey, compiled, cacheMethod, cacheDirectoryPath);
+    await set(specifier, compiled, cacheMethod, cacheDirectoryPath);
 
     return compiled;
   } catch (_error: unknown) {
