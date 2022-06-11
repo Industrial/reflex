@@ -8,7 +8,7 @@
 
 A [React](https://reactjs.org) framework for [Deno](https://deno.land) and [Oak](https://deno.land/x/oak).
 
-## Fast!
+## Fast
 
 Reflex apps are fast and performant. Check out the [Lighthouse Score](https://pagespeed.web.dev/report?url=https%3A%2F%2Ftodo-reflex.deno.dev%2Flist&form_factor=mobile) of the demo app.
 
