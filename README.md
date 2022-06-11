@@ -19,6 +19,10 @@ Reflex apps are fast and performant. Check out the [Lighthouse Score](https://pa
 - Serves all vendor files locally, ensuring that your users get what you expect and you don't need an external CDN.
 - Caching out of the box using the Deno cache.
 
+## Docs
+
+[API Docs](https://doc.deno.land/https://deno.land/x/reflex/mod.ts)
+
 ## Support
 
 Create an [Issue](https://github.com/Industrial/reflex/issues) or come hang out on [Discord](https://discord.gg/CvPVVeVk).
