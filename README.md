@@ -1,8 +1,8 @@
 [![Build](https://img.shields.io/github/workflow/status/Industrial/reflex/On%20Push%20&%20PR)](https://github.com/Industrial/reflex/actions/workflows/on-push-and-pr.yml)
 [![Issues](https://img.shields.io/github/issues/Industrial/reflex)](https://github.com/Industrial/reflex/issues)
-[![License](https://img.shields.io/github/license/Industrial/reflex)](https://github.com/Industrial/reflex/blob/master/LICENSE)
-[![Commit Activity](https://img.shields.io/github/commit-activity/m/Industrial/reflex)](https://github.com/Industrial/reflex/commits)
-[![Discord](https://img.shields.io/discord/365982843970650113)](https://discord.gg/CvPVVeVk)
+[![License](https://img.shields.io/github/license/Industrial/reflex)](https://github.com/Industrial/reflex/blob/main/LICENSE)
+[![Commit Activity](https://img.shields.io/github/commit-activity/m/Industrial/reflex)](https://github.com/Industrial/reflex/commits/main)
+[![Discord](https://img.shields.io/discord/365982843970650113)](https://discord.gg/F3E35cx)
 
 # Reflex
 
