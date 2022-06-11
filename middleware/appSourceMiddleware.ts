@@ -24,6 +24,13 @@ export const appSourceMiddleware = async ({
   sourceDirectoryPath = resolveLocalPath('./app'),
   vendorSourcePrefix = '/.v',
 }: AppSourceProps) => {
+  // console.log('appSourceMiddleware:cacheMethod', cacheMethod);
+  // console.log('appSourceMiddleware:cacheDirectoryPath', cacheDirectoryPath);
+  // console.log('appSourceMiddleware:importMapPath', importMapPath);
+  // console.log('appSourceMiddleware:sourceDirectoryPath', sourceDirectoryPath);
+  // console.log('appSourceMiddleware:appSourcePrefix', appSourcePrefix);
+  // console.log('appSourceMiddleware:vendorSourcePrefix', vendorSourcePrefix);
+
   const importMap = await getImportMap(importMapPath);
   const resolvedImports = await resolveImports({
     appSourcePrefix,

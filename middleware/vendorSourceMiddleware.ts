@@ -22,6 +22,12 @@ export const vendorSourceMiddleware = async ({
   importMapPath = resolveLocalPath('./importMap.json'),
   vendorSourcePrefix = '/.v',
 }: VendorSourceMiddlewareProps) => {
+  // console.log('vendorSourceMiddleware:cacheMethod', cacheMethod);
+  // console.log('vendorSourceMiddleware:cacheDirectoryPath', cacheDirectoryPath);
+  // console.log('vendorSourceMiddleware:importMapPath', importMapPath);
+  // console.log('vendorSourceMiddleware:appSourcePrefix', appSourcePrefix);
+  // console.log('vendorSourceMiddleware:vendorSourcePrefix', vendorSourcePrefix);
+
   const importMap = await getImportMap(importMapPath);
   const resolvedImports = await resolveImports({
     appSourcePrefix,

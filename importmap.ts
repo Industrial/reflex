@@ -36,7 +36,12 @@ export const resolveImports = async ({
   importMap,
   importMapPath,
 }: ResolveImportsProps): Promise<Record<string, string>> => {
-  const cached = await get(importMapPath, cacheMethod, cacheDirectoryPath);
+  let cacheKey: string = importMapPath;
+  if (cacheMethod === 'disk') {
+    cacheKey = hashSource(JSON.stringify(importMap));
+  }
+
+  const cached = await get(cacheKey, cacheMethod, cacheDirectoryPath);
   if (cached) {
     return JSON.parse(cached);
   }
@@ -74,7 +79,7 @@ export const resolveImports = async ({
 
   const compiled = JSON.stringify(resolvedImports);
 
-  await set(importMapPath, compiled);
+  await set(cacheKey, compiled, cacheMethod, cacheDirectoryPath);
 
   return resolvedImports;
 };

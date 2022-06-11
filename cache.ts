@@ -11,6 +11,8 @@ export const get = async (
   method: CacheMethod = 'memory',
   directory = '.cache',
 ): Promise<string | undefined> => {
+  // console.log('cache.get', key, method, directory);
+
   if (method === 'memory') {
     return memoryCache.get(key);
   }
@@ -37,6 +39,8 @@ export const set = async (
   method: CacheMethod = 'memory',
   directory = '.cache',
 ): Promise<void> => {
+  // console.log('cache.set', key, value, method, directory);
+
   if (method === 'memory') {
     memoryCache.set(key, value);
   }
