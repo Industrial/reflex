@@ -7,7 +7,7 @@ import type {
 import { dirname, resolve, Visitor } from '../deps.ts';
 
 export type ImportVisitorProps = {
-  specifier: string;
+  filePath: string;
   sourceDirectoryPath?: string;
   appSourcePrefix: string;
   vendorSourcePrefix: string;
@@ -16,7 +16,7 @@ export type ImportVisitorProps = {
 };
 
 export class ImportVisitor extends Visitor {
-  specifier: string;
+  filePath: string;
   sourceDirectoryPath?: string;
   appSourcePrefix: string;
   vendorSourcePrefix: string;
@@ -25,7 +25,7 @@ export class ImportVisitor extends Visitor {
   resolvedImports: Record<string, string>;
 
   constructor({
-    specifier,
+    filePath,
     sourceDirectoryPath,
     appSourcePrefix,
     vendorSourcePrefix,
@@ -33,7 +33,7 @@ export class ImportVisitor extends Visitor {
     resolvedImports,
   }: ImportVisitorProps) {
     super();
-    this.specifier = specifier;
+    this.filePath = filePath;
     this.sourceDirectoryPath = sourceDirectoryPath;
     this.appSourcePrefix = appSourcePrefix;
     this.vendorSourcePrefix = vendorSourcePrefix;
@@ -56,7 +56,7 @@ export class ImportVisitor extends Visitor {
         throw new Error(`No sourceDirectoryPath defined`);
       }
 
-      const specifierPath = resolve(this.sourceDirectoryPath, this.specifier);
+      const specifierPath = resolve(this.sourceDirectoryPath, this.filePath);
       const specifierDirectoryPath = dirname(specifierPath);
       const normalized = resolve(specifierDirectoryPath, node.value);
 

@@ -49,11 +49,10 @@ export const appSourceMiddleware = async ({
       vendorSourcePrefix,
       cacheDirectoryPath,
       cacheMethod,
-      importMap,
       sourceDirectoryPath,
       resolvedImports,
       appSourcePrefix,
-      specifier: `${sourceDirectoryPath}/${path}`,
+      filePath: `${sourceDirectoryPath}/${path}`,
     });
 
     if (!transpileFileResult) {

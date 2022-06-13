@@ -8,14 +8,16 @@ export type VendorSourceMiddlewareProps = {
   cacheDirectoryPath: string;
   cacheMethod: CacheMethod;
   importMapPath: string;
+  sourceDirectoryPath: string;
   vendorSourcePrefix: string;
 };
 
 export const vendorSourceMiddleware = async ({
   appSourcePrefix = '/.x',
-  cacheMethod = 'memory',
   cacheDirectoryPath = '.cache',
+  cacheMethod = 'memory',
   importMapPath = resolveLocalPath('./importMap.json'),
+  sourceDirectoryPath = resolveLocalPath('./app'),
   vendorSourcePrefix = '/.v',
 }: VendorSourceMiddlewareProps) => {
   // console.log('vendorSourceMiddleware:cacheMethod', cacheMethod);
@@ -57,9 +59,9 @@ export const vendorSourceMiddleware = async ({
       appSourcePrefix,
       cacheDirectoryPath,
       cacheMethod,
-      local: resolvedImport,
       resolvedImports,
-      specifier: importURL,
+      sourceDirectoryPath,
+      filePath: resolvedImport,
       vendorSourcePrefix,
     });
 

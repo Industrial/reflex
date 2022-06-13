@@ -88,9 +88,9 @@ export type CompileFileProps = {
   appSourcePrefix: string;
   cacheDirectoryPath: string;
   cacheMethod: CacheMethod;
-  local: string;
   resolvedImports: Record<string, string>;
-  specifier: string;
+  sourceDirectoryPath: string;
+  filePath: string;
   vendorSourcePrefix: string;
 };
 
@@ -98,9 +98,9 @@ export const compileFile = async ({
   appSourcePrefix,
   cacheDirectoryPath,
   cacheMethod,
-  local,
   resolvedImports,
-  specifier,
+  sourceDirectoryPath,
+  filePath,
   vendorSourcePrefix,
 }: CompileFileProps): Promise<string> => {
   // console.log('compileFile:local', local);
@@ -113,15 +113,15 @@ export const compileFile = async ({
 
   let source: string;
   try {
-    source = await fetchSourceFromPath(local || specifier);
+    source = await fetchSourceFromPath(filePath);
   } catch (error: unknown) {
     if ((error as Error).message.includes('Is a directory')) {
-      return local;
+      return filePath;
     }
     throw error;
   }
 
-  let cacheKey: string = specifier;
+  let cacheKey: string = filePath;
   if (cacheMethod === 'disk') {
     cacheKey = hashSource(source);
   }
@@ -135,19 +135,21 @@ export const compileFile = async ({
     const compiled = await compileSource(
       source,
       new ImportVisitor({
-        specifier,
         appSourcePrefix,
-        vendorSourcePrefix,
         parsedImports: importMap.imports,
         resolvedImports,
+        sourceDirectoryPath,
+        filePath,
+        vendorSourcePrefix,
       }),
     );
 
     await set(cacheKey, compiled, cacheMethod, cacheDirectoryPath);
 
     return compiled;
-  } catch (_error: unknown) {
-    console.error(`Error compiling ${specifier}. Using source.`);
+  } catch (error: unknown) {
+    // console.error(`Error compiling ${specifier}. Using source.`);
+    console.error(error);
     return source;
   }
 };
@@ -157,6 +159,7 @@ export type CompileFilesProps = {
   cacheDirectoryPath: string;
   cacheMethod: CacheMethod;
   resolvedImports: Record<string, string>;
+  sourceDirectoryPath: string;
   vendorSourcePrefix: string;
 };
 
@@ -165,17 +168,18 @@ export const compileFiles = async ({
   cacheDirectoryPath,
   cacheMethod,
   resolvedImports,
+  sourceDirectoryPath,
   vendorSourcePrefix,
 }: CompileFilesProps): Promise<Record<string, string>> => {
   const compiledVendorFiles = await asyncMap<string>(
-    async (local, specifier) => {
+    async (_local, filePath) => {
       return await compileFile({
         appSourcePrefix,
         cacheDirectoryPath,
         cacheMethod,
-        local,
         resolvedImports,
-        specifier,
+        sourceDirectoryPath,
+        filePath,
         vendorSourcePrefix,
       });
     },

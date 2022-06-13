@@ -3,17 +3,20 @@ import { DocumentElement } from '../types.ts';
 import { Middleware } from '../deps.ts';
 import { appSourceMiddleware } from './appSourceMiddleware.ts';
 import { resolveLocalPath } from '../path.ts';
-import { serverSideRenderMiddleware } from './serverSideRenderMiddleware.tsx';
+import {
+  RenderFunction,
+  serverSideRenderMiddleware,
+} from './serverSideRenderMiddleware.tsx';
 import { staticFileMiddleware } from './staticFileMiddleware.ts';
 import { vendorSourceMiddleware } from './vendorSourceMiddleware.ts';
 
 export type ReflexMiddlewareProps = {
   Document: DocumentElement;
   appSourcePrefix?: string;
-  cacheMethod?: CacheMethod;
   cacheDirectoryPath?: string;
+  cacheMethod?: CacheMethod;
   importMapPath?: string;
-  modifyStream?: (applicationStream: ReadableStream) => ReadableStream;
+  render?: RenderFunction;
   sourceDirectoryPath?: string;
   vendorSourcePrefix?: string;
 };
@@ -21,10 +24,10 @@ export type ReflexMiddlewareProps = {
 export const reflexMiddleware = async ({
   Document,
   appSourcePrefix = '/.x',
-  cacheMethod = 'memory',
   cacheDirectoryPath = '.cache',
+  cacheMethod = 'memory',
   importMapPath = resolveLocalPath('./importMap.json'),
-  modifyStream,
+  render,
   sourceDirectoryPath = resolveLocalPath('./app'),
   vendorSourcePrefix = '/.v',
 }: ReflexMiddlewareProps) => {
@@ -42,7 +45,7 @@ export const reflexMiddleware = async ({
   const serverSideRender = serverSideRenderMiddleware({
     Document,
     vendorSourcePrefix,
-    modifyStream,
+    render,
   });
 
   const staticFile = staticFileMiddleware();
@@ -52,6 +55,7 @@ export const reflexMiddleware = async ({
     cacheDirectoryPath,
     cacheMethod,
     importMapPath,
+    sourceDirectoryPath,
     vendorSourcePrefix,
   });
 
