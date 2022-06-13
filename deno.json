@@ -7,11 +7,11 @@
   },
   "compilerOptions": {
     "lib": [
-      "deno.window",
-      "es2020",
-      "esnext",
       "dom",
-      "esnext.asynciterable"
+      "dom.iterable",
+      "dom.asynciterable",
+      "deno.ns",
+      "deno.unstable"
     ],
     "allowJs": true,
     "allowUnreachableCode": false,
