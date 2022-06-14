@@ -1,6 +1,17 @@
 /** @jsx React.createElement */
-import { Middleware, React, renderToReadableStream } from '../deps.ts';
-import { DocumentElement } from '../types.ts';
+import {
+  Middleware,
+  OakRequest,
+  React,
+  renderToReadableStream,
+} from '../deps.ts';
+
+export type DocumentElement = React.ElementType<DocumentProps>;
+
+export type DocumentProps = {
+  request: OakRequest;
+  vendorSourcePrefix: string;
+};
 
 export type RenderFunction = (
   render: typeof renderToReadableStream,

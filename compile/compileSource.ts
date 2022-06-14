@@ -4,7 +4,7 @@ import {
   transformSync,
   Visitor,
   wasmWeb,
-} from './deps.ts';
+} from '../deps.ts';
 
 await wasmWeb('https://cdn.esm.sh/@swc/wasm-web@1.2.189/wasm-web_bg.wasm');
 
@@ -14,10 +14,10 @@ const parserOptions = {
   dynamicImport: true,
 };
 
-export const compileSource = async (
+export async function compileSource(
   source: string,
   visitor?: Visitor,
-): Promise<string> => {
+): Promise<string> {
   const transformResult = await transformSync(source, {
     jsc: {
       parser: parserOptions,
@@ -34,4 +34,4 @@ export const compileSource = async (
   const { code } = printSync(ast, { minify: true });
 
   return code;
-};
+}

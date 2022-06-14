@@ -1,13 +1,13 @@
 import { CacheMethod } from '../cache.ts';
+import { compileFile } from '../compile/compileFile.ts';
 import { Middleware } from '../deps.ts';
-import { compileFile, getImportMap, resolveImports } from '../importmap.ts';
+import { getImportMap, resolveImports } from '../importmap/mod.ts';
 import { internalToExternalURL, resolveLocalPath } from '../path.ts';
 
 export type VendorSourceMiddlewareProps = {
   appSourcePrefix: string;
   cacheDirectoryPath: string;
   cacheMethod: CacheMethod;
-  importMapPath: string;
   sourceDirectoryPath: string;
   vendorSourcePrefix: string;
 };
@@ -16,23 +16,14 @@ export const vendorSourceMiddleware = async ({
   appSourcePrefix = '/.x',
   cacheDirectoryPath = '.cache',
   cacheMethod = 'memory',
-  importMapPath = resolveLocalPath('./importMap.json'),
   sourceDirectoryPath = resolveLocalPath('./app'),
   vendorSourcePrefix = '/.v',
 }: VendorSourceMiddlewareProps) => {
-  // console.log('vendorSourceMiddleware:cacheMethod', cacheMethod);
-  // console.log('vendorSourceMiddleware:cacheDirectoryPath', cacheDirectoryPath);
-  // console.log('vendorSourceMiddleware:importMapPath', importMapPath);
-  // console.log('vendorSourceMiddleware:appSourcePrefix', appSourcePrefix);
-  // console.log('vendorSourceMiddleware:vendorSourcePrefix', vendorSourcePrefix);
-
-  const importMap = await getImportMap(importMapPath);
+  const importMap = await getImportMap();
   const resolvedImports = await resolveImports({
     appSourcePrefix,
     cacheDirectoryPath,
     cacheMethod,
-    importMap,
-    importMapPath,
     vendorSourcePrefix,
   });
 

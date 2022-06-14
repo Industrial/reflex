@@ -41,3 +41,17 @@ export const resolveLocalPath = (path: string) => {
     return resolve(path);
   }
 };
+
+// Takes a path and returns a URL or locally resolved path starting with file://.
+export function resolvePathToURL(path: string): string {
+  let resolvedPath: string;
+  const isURL = isPathAnURL(path);
+
+  if (isURL) {
+    resolvedPath = path;
+  } else {
+    resolvedPath = `file://${resolveLocalPath(path)}`;
+  }
+
+  return resolvedPath;
+}
