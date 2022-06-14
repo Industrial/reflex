@@ -6,7 +6,7 @@ export const ensureDirectory = async (path: string) => {
 
 const memoryCache = new Map<string, string>();
 
-export const get = async (
+export const cacheGet = async (
   key: string,
   method: CacheMethod = 'memory',
   directory = '.cache',
@@ -33,7 +33,7 @@ export const get = async (
   return undefined;
 };
 
-export const set = async (
+export const cacheSet = async (
   key: string,
   value: string,
   method: CacheMethod = 'memory',

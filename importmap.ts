@@ -1,4 +1,4 @@
-import { CacheMethod, get, set } from './cache.ts';
+import { cacheGet, CacheMethod, cacheSet } from './cache.ts';
 import { ImportVisitor } from './ast/ImportVisitor.ts';
 import { asyncMap } from './object.ts';
 import { compileSource } from './compile.ts';
@@ -41,7 +41,7 @@ export const resolveImports = async ({
     cacheKey = hashSource(JSON.stringify(importMap));
   }
 
-  const cached = await get(cacheKey, cacheMethod, cacheDirectoryPath);
+  const cached = await cacheGet(cacheKey, cacheMethod, cacheDirectoryPath);
   if (cached) {
     return JSON.parse(cached);
   }
@@ -79,7 +79,7 @@ export const resolveImports = async ({
 
   const compiled = JSON.stringify(resolvedImports);
 
-  await set(cacheKey, compiled, cacheMethod, cacheDirectoryPath);
+  await cacheSet(cacheKey, compiled, cacheMethod, cacheDirectoryPath);
 
   return resolvedImports;
 };
@@ -126,7 +126,7 @@ export const compileFile = async ({
     cacheKey = hashSource(source);
   }
 
-  const cached = await get(cacheKey, cacheMethod, cacheDirectoryPath);
+  const cached = await cacheGet(cacheKey, cacheMethod, cacheDirectoryPath);
   if (cached) {
     return cached;
   }
@@ -144,7 +144,7 @@ export const compileFile = async ({
       }),
     );
 
-    await set(cacheKey, compiled, cacheMethod, cacheDirectoryPath);
+    await cacheSet(cacheKey, compiled, cacheMethod, cacheDirectoryPath);
 
     return compiled;
   } catch (error: unknown) {
