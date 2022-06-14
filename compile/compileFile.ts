@@ -5,38 +5,30 @@ import { fetchSourceFromPath } from '../path.ts';
 import { compileSource } from './compileSource.ts';
 import { ImportVisitor } from './ImportVisitor.ts';
 
-export type CompileFileProps = {
-  // Path prefix from which the app source is served.
-  appSourcePrefix: string;
-
-  // The path of the directory containing the cached files when the `cacheMethod` is 'disk'.
-  cacheDirectoryPath: string;
-
-  // The cache method.
-  cacheMethod: CacheMethod;
-
-  // The resolved imports.
-  resolvedImports: Record<string, string>;
-
-  // The path of the directory containing the app source.
-  sourceDirectoryPath: string;
-
-  // The path of the file to be compiled.
-  filePath: string;
-
-  // Path prefix from which the vendor source is served.
-  vendorSourcePrefix: string;
-};
-
 export const compileFile = async ({
+  // Path prefix from which the app source is served.
   appSourcePrefix,
+  // The path of the directory containing the cached files when the `cacheMethod` is 'disk'.
   cacheDirectoryPath,
+  // The cache method.
   cacheMethod,
+  // The resolved imports.
   resolvedImports,
+  // The path of the directory containing the app source.
   sourceDirectoryPath,
+  // The path of the file to be compiled.
   filePath,
+  // Path prefix from which the vendor source is served.
   vendorSourcePrefix,
-}: CompileFileProps): Promise<string> => {
+}: {
+  appSourcePrefix: string;
+  cacheDirectoryPath: string;
+  cacheMethod: CacheMethod;
+  resolvedImports: Record<string, string>;
+  sourceDirectoryPath: string;
+  filePath: string;
+  vendorSourcePrefix: string;
+}): Promise<string> => {
   let source: string;
   try {
     source = await fetchSourceFromPath(filePath);
