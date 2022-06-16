@@ -43,7 +43,7 @@ Create a file called `server.ts` in the root of your project.
 // Import Oak, the web framework for Deno.
 import { Application } from 'https://deno.land/x/oak@v10.6.0/mod.ts';
 // Import the middleware from Reflex.
-import { reflexMiddleware } from 'https://deno.land/x/reflex@v0.3.0/mod.ts';
+import { reflexMiddleware } from 'https://deno.land/x/reflex/mod.ts';
 
 // This is the server side HTML of your app. We will create this file later on.
 import { Document } from './app/Document.tsx';
@@ -54,7 +54,13 @@ const port = Number(Deno.env.get('port') ?? 3000);
 const app = new Application();
 
 // Use the Reflex middleware.
-app.use(await reflexMiddleware({ Document }));
+app.use(reflexMiddleware({
+  Document,
+  // Reflex uses a memory cache for assets by default (Edge Function's can't
+  // write to disk) but you can set it to disk for a speedy development
+  // experience.
+  cacheMethod: 'disk',
+}));
 
 // Start the Oak server.
 console.log(`Listening on http://${hostname}:${port}`);
@@ -76,12 +82,15 @@ import React from 'react';
 // This is the App file, the root component of your app.
 import { App } from './App.tsx';
 
-export type DocumentProps = {
-  // Path the vendor files will be served from. By default it's /.v/*.
+// The Server Side Rendering part of your React application. This will not be
+// rendered on the client side.
+export const Document = ({
+  request,
+  vendorSourcePrefix,
+}: {
+  request: Request;
   vendorSourcePrefix: string;
-};
-
-export const Document = ({ vendorSourcePrefix }: DocumentProps) => {
+}) => {
   return (
     <html>
       <head>
@@ -103,8 +112,6 @@ export const Document = ({ vendorSourcePrefix }: DocumentProps) => {
                 const rootElement = document.getElementById('root');
                 const appElement = createElement(App);
                 hydrateRoot(rootElement, appElement);
-                // const root = createRoot(rootElement);
-                // root.render(appElement);
               `,
           }}
         >
@@ -140,9 +147,9 @@ Create a file called `importMap.json` in the root of your project.
 ```json
 {
   "imports": {
-    "react": "https://esm.sh/react@18.1.0?dev",
-    "react-dom": "https://esm.sh/react-dom@18.1.0?dev",
-    "react-dom/client": "https://esm.sh/react-dom@18.1.0/client?dev"
+    "react": "https://esm.sh/react@18.1.0",
+    "react-dom": "https://esm.sh/react-dom@18.1.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.1.0/client"
   }
 }
 ```
