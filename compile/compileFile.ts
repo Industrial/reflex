@@ -9,49 +9,32 @@ import { ImportVisitor } from './ImportVisitor.ts';
  * Compile a file using SWC. Uses the {@ImportVisitor} to rewrite imports to be
  * served from the {@appSourceMiddleware} or {@vendorSourceMiddleware}.
  * @async
- * @param {{
-  // Path prefix from which the app source is served.
-  appSourcePrefix: string;
-  // The path of the directory containing the cached files when the `cacheMethod` is 'disk'.
-  cacheDirectoryPath: string;
-  // The cache method.
-  cacheMethod: CacheMethod;
-  // The resolved imports.
-  resolvedImports: Record<string, string>;
-  // The path of the directory containing the app source.
-  sourceDirectoryPath: string;
-  // The path of the file to be compiled.
-  filePath: string;
-  // Path prefix from which the vendor source is served.
-  vendorSourcePrefix: string;
-}} {
-  appSourcePrefix,
-  cacheDirectoryPath,
-  cacheMethod,
-  resolvedImports,
-  sourceDirectoryPath,
-  filePath,
-  vendorSourcePrefix,
-}
- * @returns {Promise<string>} The compiled source.
+ * The path of the file to be compiled.
+ * @param {string} filePath
+ * The path of the directory containing the cached files when the `cacheMethod` is 'disk'.
+ * @param {string} cacheDirectoryPath
+ * The cache method.
+ * @param {CacheMethod} cacheMethod
+ * The resolved imports.
+ * @param {Record<string, string>} resolvedImports
+ * The path of the directory containing the app source.
+ * @param {string} sourceDirectoryPath
+ * Path prefix from which the app source is served.
+ * @param {string} appSourcePrefix
+ * Path prefix from which the vendor source is served.
+ * @param {string} vendorSourcePrefix
+ * The compiled source.
+ * @returns {Promise<string>}
  */
-export const compileFile = async ({
-  appSourcePrefix,
-  cacheDirectoryPath,
-  cacheMethod,
-  resolvedImports,
-  sourceDirectoryPath,
-  filePath,
-  vendorSourcePrefix,
-}: {
-  appSourcePrefix: string;
-  cacheDirectoryPath: string;
-  cacheMethod: CacheMethod;
-  resolvedImports: Record<string, string>;
-  sourceDirectoryPath: string;
-  filePath: string;
-  vendorSourcePrefix: string;
-}): Promise<string> => {
+export const compileFile = async (
+  filePath: string,
+  cacheDirectoryPath: string,
+  cacheMethod: CacheMethod,
+  resolvedImports: Record<string, string>,
+  sourceDirectoryPath: string,
+  appSourcePrefix: string,
+  vendorSourcePrefix: string,
+): Promise<string> => {
   let source: string;
   try {
     source = await fetchSourceFromPath(filePath);

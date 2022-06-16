@@ -32,15 +32,15 @@ export const appSourceMiddleware = ({
 
     const path = ctx.request.url.pathname.replace(`${appSourcePrefix}/`, '');
 
-    const transpileFileResult = await compileFile({
-      vendorSourcePrefix,
+    const transpileFileResult = await compileFile(
+      `${sourceDirectoryPath}/${path}`,
       cacheDirectoryPath,
       cacheMethod,
-      sourceDirectoryPath,
       resolvedImports,
+      sourceDirectoryPath,
       appSourcePrefix,
-      filePath: `${sourceDirectoryPath}/${path}`,
-    });
+      vendorSourcePrefix,
+    );
 
     if (!transpileFileResult) {
       await next();

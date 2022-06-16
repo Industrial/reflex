@@ -45,15 +45,15 @@ export const vendorSourceMiddleware = ({
     const importURL = importMapURL || externalURL;
     const resolvedImport = resolvedImports[importURL] || importURL;
 
-    const transpileFileResult = await compileFile({
-      appSourcePrefix,
+    const transpileFileResult = await compileFile(
+      resolvedImport,
       cacheDirectoryPath,
       cacheMethod,
       resolvedImports,
       sourceDirectoryPath,
-      filePath: resolvedImport,
+      appSourcePrefix,
       vendorSourcePrefix,
-    });
+    );
 
     if (!transpileFileResult) {
       await next();
