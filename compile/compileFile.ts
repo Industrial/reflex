@@ -5,6 +5,9 @@ import { fetchSourceFromPath } from '../path.ts';
 import { compileSource } from './compileSource.ts';
 import { ImportVisitor } from './ImportVisitor.ts';
 
+/**
+ * Compiles a file.
+ */
 export const compileFile = async ({
   appSourcePrefix,
   cacheDirectoryPath,
