@@ -1,5 +1,5 @@
 import { CacheMethod } from '../cache.ts';
-import { Middleware } from '../deps.ts';
+import { composeMiddleware } from '../deps.ts';
 import { appSourceMiddleware } from './appSourceMiddleware.ts';
 import { resolveLocalPath } from '../path.ts';
 import {
@@ -20,7 +20,7 @@ export type ReflexMiddlewareProps = {
   vendorSourcePrefix?: string;
 };
 
-export const reflexMiddleware = async ({
+export const reflexMiddleware = ({
   Document,
   appSourcePrefix = '/.x',
   cacheDirectoryPath = '.cache',
@@ -29,46 +29,26 @@ export const reflexMiddleware = async ({
   sourceDirectoryPath = resolveLocalPath('./app'),
   vendorSourcePrefix = '/.v',
 }: ReflexMiddlewareProps) => {
-  const startTime = Date.now();
-
-  const appSource = await appSourceMiddleware({
-    appSourcePrefix,
-    cacheDirectoryPath,
-    cacheMethod,
-    sourceDirectoryPath,
-    vendorSourcePrefix,
-  });
-
-  const serverSideRender = serverSideRenderMiddleware({
-    Document,
-    vendorSourcePrefix,
-    render,
-  });
-
-  const staticFile = staticFileMiddleware();
-
-  const vendorSource = await vendorSourceMiddleware({
-    appSourcePrefix,
-    cacheDirectoryPath,
-    cacheMethod,
-    sourceDirectoryPath,
-    vendorSourcePrefix,
-  });
-
-  // TODO: Use Oak Compose here.
-  const middleware: Middleware = async (ctx, next) => {
-    await vendorSource(ctx, async () => {
-      await appSource(ctx, async () => {
-        await staticFile(ctx, async () => {
-          await serverSideRender(ctx, next);
-        });
-      });
-    });
-  };
-
-  const endTime = Date.now();
-  const duration = endTime - startTime;
-  console.log(`Reflex middleware loaded in ${duration}ms`);
-
-  return middleware;
+  return composeMiddleware([
+    vendorSourceMiddleware({
+      appSourcePrefix,
+      cacheDirectoryPath,
+      cacheMethod,
+      sourceDirectoryPath,
+      vendorSourcePrefix,
+    }),
+    appSourceMiddleware({
+      appSourcePrefix,
+      cacheDirectoryPath,
+      cacheMethod,
+      sourceDirectoryPath,
+      vendorSourcePrefix,
+    }),
+    staticFileMiddleware(),
+    serverSideRenderMiddleware({
+      Document,
+      vendorSourcePrefix,
+      render,
+    }),
+  ]);
 };

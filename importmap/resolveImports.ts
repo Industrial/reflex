@@ -2,20 +2,19 @@ import { cacheGet, CacheMethod, cacheSet } from '../cache.ts';
 import { createGraph } from '../deps.ts';
 import { resolvePathToURL } from '../path.ts';
 import { hashSource } from '../hash.ts';
-import { getImportMap } from './getImportMap.ts';
+import { ensureImportMap } from './getImportMap.ts';
 
+let resolvedImports: Record<string, string>;
 export type ResolveImportsProps = {
-  appSourcePrefix: string;
   cacheDirectoryPath?: string;
   cacheMethod?: CacheMethod;
-  vendorSourcePrefix: string;
 };
 
 export const resolveImports = async ({
   cacheDirectoryPath,
   cacheMethod,
 }: ResolveImportsProps): Promise<Record<string, string>> => {
-  const importMap = await getImportMap();
+  const importMap = await ensureImportMap();
   let cacheKey = 'importMap.json';
   if (cacheMethod === 'disk') {
     cacheKey = hashSource(JSON.stringify(importMap));
@@ -52,6 +51,16 @@ export const resolveImports = async ({
   const compiled = JSON.stringify(resolvedImports);
 
   await cacheSet(cacheKey, compiled, cacheMethod, cacheDirectoryPath);
+
+  return resolvedImports;
+};
+
+export const ensureResolvedImports = async (props: ResolveImportsProps) => {
+  if (resolvedImports) {
+    return resolvedImports;
+  }
+
+  resolvedImports = await resolveImports(props);
 
   return resolvedImports;
 };

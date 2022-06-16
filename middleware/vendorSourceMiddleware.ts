@@ -1,7 +1,7 @@
 import { CacheMethod } from '../cache.ts';
 import { compileFile } from '../compile/compileFile.ts';
 import { Middleware } from '../deps.ts';
-import { getImportMap, resolveImports } from '../importmap/mod.ts';
+import { ensureImportMap, ensureResolvedImports } from '../importmap/mod.ts';
 import { internalToExternalURL, resolveLocalPath } from '../path.ts';
 
 export type VendorSourceMiddlewareProps = {
@@ -12,26 +12,25 @@ export type VendorSourceMiddlewareProps = {
   vendorSourcePrefix: string;
 };
 
-export const vendorSourceMiddleware = async ({
+export const vendorSourceMiddleware = ({
   appSourcePrefix = '/.x',
   cacheDirectoryPath = '.cache',
   cacheMethod = 'memory',
   sourceDirectoryPath = resolveLocalPath('./app'),
   vendorSourcePrefix = '/.v',
 }: VendorSourceMiddlewareProps) => {
-  const importMap = await getImportMap();
-  const resolvedImports = await resolveImports({
-    appSourcePrefix,
-    cacheDirectoryPath,
-    cacheMethod,
-    vendorSourcePrefix,
-  });
-
   const middleware: Middleware = async (ctx, next) => {
     if (!ctx.request.url.pathname.startsWith(vendorSourcePrefix)) {
       await next();
       return;
     }
+
+    const importMap = await ensureImportMap();
+
+    const resolvedImports = await ensureResolvedImports({
+      cacheDirectoryPath,
+      cacheMethod,
+    });
 
     // Find it in the import map
     const path = ctx.request.url.pathname.replace(`${vendorSourcePrefix}/`, '');

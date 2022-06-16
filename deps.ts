@@ -6,7 +6,10 @@ export type {
   StringLiteral,
 } from 'https://esm.sh/@swc/core@1.2.171/types.d.ts';
 export type { Middleware } from 'https://deno.land/x/oak@v10.6.0/middleware.ts';
-export { Request as OakRequest } from 'https://deno.land/x/oak@v10.6.0/mod.ts';
+export {
+  composeMiddleware,
+  Request as OakRequest,
+} from 'https://deno.land/x/oak@v10.6.0/mod.ts';
 export { Visitor } from 'https://esm.sh/@swc/core@1.2.171/Visitor.js';
 export { createElement } from 'https://esm.sh/react@18.1.0';
 export { createGraph } from 'https://deno.land/x/deno_graph@0.27.0/mod.ts';

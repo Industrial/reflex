@@ -1,6 +1,6 @@
 import { cacheGet, CacheMethod, cacheSet } from '../cache.ts';
 import { hashSource } from '../hash.ts';
-import { getImportMap } from '../importmap/mod.ts';
+import { ensureImportMap } from '../importmap/mod.ts';
 import { fetchSourceFromPath } from '../path.ts';
 import { compileSource } from './compileSource.ts';
 import { ImportVisitor } from './ImportVisitor.ts';
@@ -49,7 +49,7 @@ export const compileFile = async ({
     return cached;
   }
 
-  const importMap = await getImportMap();
+  const importMap = await ensureImportMap();
 
   try {
     const compiled = await compileSource(

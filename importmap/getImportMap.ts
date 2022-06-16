@@ -5,7 +5,7 @@ export type ImportMap = {
 };
 
 let importMap: ImportMap;
-export const getImportMap = async (): Promise<ImportMap> => {
+export const ensureImportMap = async (): Promise<ImportMap> => {
   if (importMap) {
     return importMap;
   }
