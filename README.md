@@ -79,18 +79,15 @@ Create a file called `Document.tsx` in the `app` directory.
 // This is a module that is pulled from the `importMap.json` file.
 import React from 'react';
 
+// Easy types on the Document.
+import type { DocumentElement } from 'https://deno.land/x/reflex/mod.ts';
+
 // This is the App file, the root component of your app.
 import { App } from './App.tsx';
 
 // The Server Side Rendering part of your React application. This will not be
 // rendered on the client side.
-export const Document = ({
-  request,
-  vendorSourcePrefix,
-}: {
-  request: Request;
-  vendorSourcePrefix: string;
-}) => {
+export const Document: DocumentElement = ({ vendorSourcePrefix }) => {
   return (
     <html>
       <head>
