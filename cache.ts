@@ -1,3 +1,6 @@
+import { hashSource } from './hash.ts';
+import { debug } from './log.ts';
+
 export type CacheMethod = 'memory' | 'disk';
 
 export const ensureDirectory = async (path: string) => {
@@ -56,4 +59,31 @@ export const cacheSet = async (
       return undefined;
     }
   }
+};
+
+export const ensureCachedFile = async (
+  filePath: string,
+  source: string,
+  cacheDirectoryPath: string,
+  cacheMethod: CacheMethod,
+  fn: (source: string) => Promise<string>,
+) => {
+  debug('ensureCachedFile', filePath);
+
+  let cacheKey: string = filePath;
+  if (cacheMethod === 'disk') {
+    cacheKey = hashSource(source);
+  }
+
+  const cached = await cacheGet(cacheKey, cacheMethod, cacheDirectoryPath);
+  if (cached) {
+    debug('ensureCachedFile:cached', filePath);
+    return cached;
+  }
+
+  const result = await fn(source);
+
+  await cacheSet(cacheKey, result, cacheMethod, cacheDirectoryPath);
+
+  return result;
 };
