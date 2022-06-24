@@ -3,6 +3,7 @@ import { createGraph } from '../deps.ts';
 import { resolvePathToURL } from '../path.ts';
 import { hashSource } from '../hash.ts';
 import { ensureImportMap } from './getImportMap.ts';
+import { debug } from '../log.ts';
 
 let resolvedImports: Record<string, string>;
 export type ResolveImportsProps = {
@@ -14,6 +15,8 @@ export const resolveImports = async ({
   cacheDirectoryPath,
   cacheMethod,
 }: ResolveImportsProps): Promise<Record<string, string>> => {
+  debug('resolveImports');
+
   const importMap = await ensureImportMap();
   let cacheKey = 'importMap.json';
   if (cacheMethod === 'disk') {
@@ -56,6 +59,8 @@ export const resolveImports = async ({
 };
 
 export const ensureResolvedImports = async (props: ResolveImportsProps) => {
+  debug('ensureResolvedImports', Boolean(resolvedImports));
+
   if (resolvedImports) {
     return resolvedImports;
   }

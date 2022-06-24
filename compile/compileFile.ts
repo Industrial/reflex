@@ -1,7 +1,12 @@
-import { cacheGet, CacheMethod, cacheSet } from '../cache.ts';
-import { hashSource } from '../hash.ts';
-import { ensureImportMap } from '../importmap/mod.ts';
-import { fetchSourceFromPath } from '../path.ts';
+import { CacheMethod, ensureCachedFile } from '../cache.ts';
+import { bundle } from '../deps.ts';
+import {
+  ensureImportMap,
+  ensureResolvedImports,
+  ImportMap,
+} from '../importmap/mod.ts';
+import { debug } from '../log.ts';
+import { fetchSourceFromPath, isPathAnURL } from '../path.ts';
 import { compileSource } from './compileSource.ts';
 import { ImportVisitor } from './ImportVisitor.ts';
 
@@ -15,8 +20,6 @@ import { ImportVisitor } from './ImportVisitor.ts';
  * @param {string} cacheDirectoryPath
  * The cache method.
  * @param {CacheMethod} cacheMethod
- * The resolved imports.
- * @param {Record<string, string>} resolvedImports
  * The path of the directory containing the app source.
  * @param {string} sourceDirectoryPath
  * Path prefix from which the app source is served.
@@ -28,36 +31,23 @@ import { ImportVisitor } from './ImportVisitor.ts';
  */
 export const compileFile = async (
   filePath: string,
+  source: string,
   cacheDirectoryPath: string,
   cacheMethod: CacheMethod,
-  resolvedImports: Record<string, string>,
   sourceDirectoryPath: string,
   appSourcePrefix: string,
   vendorSourcePrefix: string,
 ): Promise<string> => {
-  let source: string;
-  try {
-    source = await fetchSourceFromPath(filePath);
-  } catch (error: unknown) {
-    if ((error as Error).message.includes('Is a directory')) {
-      return filePath;
-    }
-    throw error;
-  }
-
-  let cacheKey: string = filePath;
-  if (cacheMethod === 'disk') {
-    cacheKey = hashSource(source);
-  }
-
-  const cached = await cacheGet(cacheKey, cacheMethod, cacheDirectoryPath);
-  if (cached) {
-    return cached;
-  }
+  debug('compileFile', filePath);
 
   const importMap = await ensureImportMap();
+  const resolvedImports = await ensureResolvedImports({
+    cacheDirectoryPath,
+    cacheMethod,
+  });
 
   try {
+    debug('compileFile:compiling', filePath);
     const compiled = await compileSource(
       source,
       new ImportVisitor({
@@ -70,11 +60,74 @@ export const compileFile = async (
       }),
     );
 
-    await cacheSet(cacheKey, compiled, cacheMethod, cacheDirectoryPath);
+    let bundled: string;
+    if (isPathAnURL(filePath)) {
+      console.log('path', filePath);
+      bundled = (await bundle(new URL(filePath))).code;
+      bundled = await compileSource(
+        bundled,
+        new ImportVisitor({
+          appSourcePrefix,
+          parsedImports: importMap.imports,
+          resolvedImports,
+          sourceDirectoryPath,
+          filePath,
+          vendorSourcePrefix,
+        }),
+      );
+    } else {
+      bundled = compiled;
+    }
 
-    return compiled;
+    debug('compileFile:complete', filePath);
+    return bundled;
   } catch (error: unknown) {
     console.error(error);
     return source;
   }
+};
+
+export const compileAllImports = async (
+  importMap: ImportMap,
+  cacheDirectoryPath: string,
+  cacheMethod: CacheMethod,
+  sourceDirectoryPath: string,
+  appSourcePrefix: string,
+  vendorSourcePrefix: string,
+): Promise<void> => {
+  debug('compileAllImports:starting');
+
+  for (const [key, filePath] of Object.entries(importMap.imports)) {
+    debug('compileAllImports:entry', key, filePath);
+
+    let source: string;
+    try {
+      source = await fetchSourceFromPath(filePath);
+    } catch (error: unknown) {
+      if ((error as Error).message.includes('Is a directory')) {
+        continue;
+      }
+      throw error;
+    }
+
+    await ensureCachedFile(
+      filePath,
+      source,
+      cacheDirectoryPath,
+      cacheMethod,
+      async () => {
+        return await compileFile(
+          filePath,
+          source,
+          cacheDirectoryPath,
+          cacheMethod,
+          sourceDirectoryPath,
+          appSourcePrefix,
+          vendorSourcePrefix,
+        );
+      },
+    );
+  }
+
+  debug('compileAllImports:complete');
 };

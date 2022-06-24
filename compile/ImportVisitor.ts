@@ -5,6 +5,7 @@ import type {
   StringLiteral,
 } from '../deps.ts';
 import { dirname, resolve, Visitor } from '../deps.ts';
+import { debug } from '../log.ts';
 
 export type ImportVisitorProps = {
   filePath: string;
@@ -32,6 +33,8 @@ export class ImportVisitor extends Visitor {
     parsedImports,
     resolvedImports,
   }: ImportVisitorProps) {
+    debug('ImportVisitor#constructor');
+
     super();
     this.filePath = filePath;
     this.sourceDirectoryPath = sourceDirectoryPath;
@@ -44,8 +47,8 @@ export class ImportVisitor extends Visitor {
   private replaceStringLiteral(node: StringLiteral) {
     // Already resolved.
     if (
-      node.value.startsWith(this.appSourcePrefix) ||
-      node.value.startsWith(this.vendorSourcePrefix)
+      node.value.startsWith(`${location.origin}${this.appSourcePrefix}`) ||
+      node.value.startsWith(`${location.origin}${this.vendorSourcePrefix}`)
     ) {
       return node;
     }
@@ -62,7 +65,7 @@ export class ImportVisitor extends Visitor {
 
       if (!normalized.startsWith(this.sourceDirectoryPath)) {
         throw new Error(
-          `Local import must be in app source. ('${node.value}' in '${specifierPath}')`,
+          `While compiling '${this.filePath}': Local import must be in app source. ('${node.value}' in '${specifierPath}')`,
         );
       }
 
@@ -71,14 +74,15 @@ export class ImportVisitor extends Visitor {
         '',
       );
 
-      node.value = `${this.appSourcePrefix}${withoutBasePath}`;
+      node.value =
+        `${location.origin}${this.appSourcePrefix}${withoutBasePath}`;
       return node;
     }
 
     // ImportMap import.
     const parsedImportsResult = this.parsedImports[node.value];
     if (parsedImportsResult) {
-      node.value = `${this.vendorSourcePrefix}/${node.value}`;
+      node.value = `${location.origin}${this.vendorSourcePrefix}/${node.value}`;
       return node;
     }
 
@@ -90,7 +94,8 @@ export class ImportVisitor extends Visitor {
       return node;
     }
     const { hostname, pathname } = new URL(result);
-    node.value = `${this.vendorSourcePrefix}/${hostname}${pathname}`;
+    node.value =
+      `${location.origin}${this.vendorSourcePrefix}/${hostname}${pathname}`;
     return node;
   }
 

@@ -9,6 +9,8 @@ import {
 } from './serverSideRenderMiddleware.tsx';
 import { staticFileMiddleware } from './staticFileMiddleware.ts';
 import { vendorSourceMiddleware } from './vendorSourceMiddleware.ts';
+import { ensureImportMap, ensureResolvedImports } from '../importmap/mod.ts';
+import { debug } from '../log.ts';
 
 export type ReflexMiddlewareProps = {
   Document: DocumentElement;
@@ -29,6 +31,20 @@ export const reflexMiddleware = ({
   sourceDirectoryPath = resolveLocalPath('./app'),
   vendorSourcePrefix = '/.v',
 }: ReflexMiddlewareProps) => {
+  debug('reflexMiddleware');
+
+  (async () => {
+    try {
+      await ensureImportMap();
+      await ensureResolvedImports({
+        cacheDirectoryPath,
+        cacheMethod,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  })();
+
   return composeMiddleware([
     vendorSourceMiddleware({
       appSourcePrefix,

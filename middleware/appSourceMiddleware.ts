@@ -1,8 +1,8 @@
-import { CacheMethod } from '../cache.ts';
+import { CacheMethod, ensureCachedFile } from '../cache.ts';
 import { compileFile } from '../compile/compileFile.ts';
 import { Middleware } from '../deps.ts';
-import { ensureResolvedImports } from '../importmap/mod.ts';
-import { resolveLocalPath } from '../path.ts';
+import { debug } from '../log.ts';
+import { fetchSourceFromPath, resolveLocalPath } from '../path.ts';
 
 export type AppSourceProps = {
   appSourcePrefix: string;
@@ -19,27 +19,37 @@ export const appSourceMiddleware = ({
   sourceDirectoryPath = resolveLocalPath('./app'),
   vendorSourcePrefix = '/.v',
 }: AppSourceProps) => {
+  debug('appSourceMiddleware');
+
   const middleware: Middleware = async (ctx, next) => {
+    debug('appSourceMiddleware:middleware', ctx.request.url.pathname);
+
     if (!ctx.request.url.pathname.startsWith(appSourcePrefix)) {
+      debug('appSourceMiddleware:skipping', ctx.request.url.pathname);
       await next();
       return;
     }
 
-    const resolvedImports = await ensureResolvedImports({
-      cacheDirectoryPath,
-      cacheMethod,
-    });
-
     const path = ctx.request.url.pathname.replace(`${appSourcePrefix}/`, '');
+    const filePath = `${sourceDirectoryPath}/${path}`;
 
-    const transpileFileResult = await compileFile(
-      `${sourceDirectoryPath}/${path}`,
+    const source = await fetchSourceFromPath(filePath);
+    const transpileFileResult = await ensureCachedFile(
+      filePath,
+      source,
       cacheDirectoryPath,
       cacheMethod,
-      resolvedImports,
-      sourceDirectoryPath,
-      appSourcePrefix,
-      vendorSourcePrefix,
+      async () => {
+        return await compileFile(
+          filePath,
+          source,
+          cacheDirectoryPath,
+          cacheMethod,
+          sourceDirectoryPath,
+          appSourcePrefix,
+          vendorSourcePrefix,
+        );
+      },
     );
 
     if (!transpileFileResult) {
@@ -47,7 +57,10 @@ export const appSourceMiddleware = ({
       return;
     }
 
-    ctx.response.headers.set('Content-Type', 'text/javascript;charset=UTF-8');
+    ctx.response.headers.set(
+      'Content-Type',
+      'application/javascript;charset=UTF-8',
+    );
     ctx.response.headers.set('Cache-Control', 'max-age=31536000');
     ctx.response.body = transpileFileResult;
   };

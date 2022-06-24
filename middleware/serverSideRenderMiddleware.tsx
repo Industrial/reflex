@@ -5,6 +5,7 @@ import {
   React,
   renderToReadableStream,
 } from '../deps.ts';
+import { debug } from '../log.ts';
 
 export type DocumentElement = React.ElementType<DocumentProps>;
 
@@ -29,24 +30,33 @@ export const serverSideRenderMiddleware = ({
   render,
   vendorSourcePrefix,
 }: ServerSideRenderMiddlewareProps) => {
+  debug('serverSideRenderMiddleware');
+
   const middleware: Middleware = async (ctx) => {
+    debug('serverSideRenderMiddleware:middleware', ctx.request.url.pathname);
+
     ctx.response.headers.set('Content-Type', 'text/html; charset=utf-8');
 
-    const documentElement = (
-      <Document
-        request={ctx.request}
-        vendorSourcePrefix={vendorSourcePrefix}
-      />
-    );
+    try {
+      const documentElement = (
+        <Document
+          request={ctx.request}
+          vendorSourcePrefix={vendorSourcePrefix}
+        />
+      );
 
-    let stream: ReadableStream;
-    if (render) {
-      stream = await render(renderToReadableStream, documentElement);
-    } else {
-      stream = await renderToReadableStream(documentElement);
+      let stream: ReadableStream;
+      if (render) {
+        stream = await render(renderToReadableStream, documentElement);
+      } else {
+        stream = await renderToReadableStream(documentElement);
+      }
+
+      ctx.response.body = stream;
+    } catch (_error) {
+      ctx.response.status = 500;
+      ctx.response.body = 'Internal Server Error';
     }
-
-    ctx.response.body = stream;
   };
 
   return middleware;

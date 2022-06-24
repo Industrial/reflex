@@ -1,3 +1,4 @@
+import { debug } from '../log.ts';
 import { resolveLocalPath } from '../path.ts';
 
 export type ImportMap = {
@@ -6,9 +7,12 @@ export type ImportMap = {
 
 let importMap: ImportMap;
 export const ensureImportMap = async (): Promise<ImportMap> => {
+  debug('ensureImportMap', !!importMap);
+
   if (importMap) {
     return importMap;
   }
+
   const path = resolveLocalPath('./importMap.json');
 
   const decoder = new TextDecoder();
